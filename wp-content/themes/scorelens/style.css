@@ -1,0 +1,20 @@
+/*
+Theme Name:         ScoreLens
+Theme URI:          https://scorelens.in
+Author:             Omnexa Solutions
+Author URI:         https://omnexa.in
+Description:        ScoreLens — AI-powered mock tests for SSC & State PSC aspirants. A performant WordPress landing-page theme featuring dark/light mode, animated background mesh, AI analytics showcase, and a fully responsive layout. Built with CSS Grid, Flexbox, and CSS custom properties. Zero inline CSS, all classes prefixed sl-.
+Version:            2.0.0
+Requires at least:  6.2
+Tested up to:       6.7
+Requires PHP:       8.0
+License:            Proprietary
+License URI:        https://scorelens.in/license
+Text Domain:        scorelens
+Tags:               one-page, education, landing-page, custom-logo, custom-menu, dark-mode, responsive-layout, translation-ready
+*/
+
+/*
+ * All theme styles are in assets/css/scorelens.css.
+ * Enqueued via functions.php → scorelens_enqueue_assets().
+ */
