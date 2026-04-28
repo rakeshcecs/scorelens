@@ -8,7 +8,7 @@
 	<p>
 		<?php esc_html_e( 'Join the aspirants who stopped practising blindly — and started preparing like the real exam. Start with a free mock test today.', 'scorelens' ); ?>
 	</p>
-	<a href="#" class="sl-btn sl-btn--primary sl-btn--lg">
+	<a href="#" class="sl-btn sl-btn--primary sl-btn--lg" data-sl-modal-open="sl-cta-modal">
 		<span><?php esc_html_e( 'Take your free mock →', 'scorelens' ); ?></span>
 	</a>
 </div>
@@ -102,6 +102,45 @@
 	</div>
 
 </footer>
+
+<!-- ════════════ CTA MODAL — Lead capture popup ════════════ -->
+<?php
+/* ─── Edit these to update popup content. The form fields,
+ *     CAPTCHA, urgency line and CTA button live inside the
+ *     form-plugin shortcode (Fluent Forms / CF7 / WPForms). ─── */
+$sl_modal_badge     = __( 'Early access · Launching soon', 'scorelens' );
+$sl_modal_title     = __( 'Be among the first to improve your SSC score', 'scorelens' );
+$sl_modal_desc      = __( '<strong>ScoreLens is launching soon for SSC aspirants.</strong> Sign up now and we\'ll notify you the moment it goes live — plus give you <strong>1 month of Pro access free.</strong>', 'scorelens' );
+$sl_modal_shortcode = '[fluentform id="1"]';
+$sl_modal_trust     = __( 'No spam. Just early access + 1 month free Pro.', 'scorelens' );
+/* ───────────────────────────────────────────────────────── */
+?>
+<div class="sl-modal" id="sl-cta-modal" role="dialog" aria-modal="true" aria-labelledby="sl-cta-modal-title" aria-hidden="true">
+	<div class="sl-modal-backdrop" data-sl-modal-close></div>
+	<div class="sl-modal-dialog" role="document">
+		<button class="sl-modal-close" type="button" data-sl-modal-close aria-label="<?php esc_attr_e( 'Close', 'scorelens' ); ?>">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+				<path d="M18 6L6 18M6 6l12 12"/>
+			</svg>
+		</button>
+		<div class="sl-modal-content">
+			<div class="sl-modal-header">
+				<div class="sl-badge">
+					<span class="sl-badge-dot"></span>
+					<?php echo esc_html( $sl_modal_badge ); ?>
+				</div>
+				<h3 class="sl-modal-title" id="sl-cta-modal-title"><?php echo esc_html( $sl_modal_title ); ?></h3>
+				<p class="sl-modal-desc"><?php echo wp_kses( $sl_modal_desc, [ 'strong' => [], 'b' => [], 'em' => [], 'br' => [] ] ); ?></p>
+			</div>
+			<div class="sl-modal-body">
+				<?php echo do_shortcode( $sl_modal_shortcode ); ?>
+			</div>
+			<?php if ( ! empty( $sl_modal_trust ) ) : ?>
+				<p class="sl-modal-trust"><?php echo wp_kses( $sl_modal_trust, [ 'strong' => [], 'b' => [], 'em' => [], 'br' => [] ] ); ?></p>
+			<?php endif; ?>
+		</div>
+	</div>
+</div>
 
 <?php wp_footer(); ?>
 </body>

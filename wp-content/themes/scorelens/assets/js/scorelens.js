@@ -266,6 +266,68 @@
 	}
 
 	/* ══════════════════════════════════════════════════════════
+	   MODAL — open/close via [data-sl-modal-open] / [data-sl-modal-close]
+	   ESC key closes. Body scroll is locked while open.
+	   ══════════════════════════════════════════════════════════ */
+	function initModal() {
+		var openTriggers = document.querySelectorAll( '[data-sl-modal-open]' );
+		if ( ! openTriggers.length ) return;
+
+		var lastTrigger = null;
+
+		function openModal( id, trigger ) {
+			var modal = document.getElementById( id );
+			if ( ! modal ) return;
+			lastTrigger = trigger || null;
+			modal.classList.add( 'sl-modal--open' );
+			modal.setAttribute( 'aria-hidden', 'false' );
+			document.body.classList.add( 'sl-modal-locked' );
+
+			var focusable = modal.querySelector(
+				'input, textarea, select, button:not([data-sl-modal-close]), a[href]'
+			);
+			if ( focusable ) {
+				focusable.focus();
+			} else {
+				var closeBtn = modal.querySelector( '.sl-modal-close' );
+				if ( closeBtn ) closeBtn.focus();
+			}
+		}
+
+		function closeModal( modal ) {
+			if ( ! modal ) return;
+			modal.classList.remove( 'sl-modal--open' );
+			modal.setAttribute( 'aria-hidden', 'true' );
+			document.body.classList.remove( 'sl-modal-locked' );
+			if ( lastTrigger && typeof lastTrigger.focus === 'function' ) {
+				lastTrigger.focus();
+			}
+			lastTrigger = null;
+		}
+
+		openTriggers.forEach( function ( trigger ) {
+			trigger.addEventListener( 'click', function ( e ) {
+				var id = trigger.getAttribute( 'data-sl-modal-open' );
+				if ( ! id ) return;
+				e.preventDefault();
+				openModal( id, trigger );
+			} );
+		} );
+
+		document.querySelectorAll( '[data-sl-modal-close]' ).forEach( function ( el ) {
+			el.addEventListener( 'click', function () {
+				closeModal( el.closest( '.sl-modal' ) );
+			} );
+		} );
+
+		document.addEventListener( 'keydown', function ( e ) {
+			if ( e.key !== 'Escape' ) return;
+			var openOne = document.querySelector( '.sl-modal.sl-modal--open' );
+			if ( openOne ) closeModal( openOne );
+		} );
+	}
+
+	/* ══════════════════════════════════════════════════════════
 	   INIT — wait for DOM
 	   ══════════════════════════════════════════════════════════ */
 	document.addEventListener( 'DOMContentLoaded', function () {
@@ -277,6 +339,7 @@
 		initScrollReveal();
 		initAvatarFallback();
 		initMobileNav();
+		initModal();
 	} );
 
 } )();

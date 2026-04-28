@@ -39,7 +39,7 @@ get_header();
 			</p>
 
 			<div class="sl-hero-cta sl-fade sl-d3">
-				<a href="#sl-cta" class="sl-btn sl-btn--primary sl-btn--lg">
+				<a href="#sl-cta" class="sl-btn sl-btn--primary sl-btn--lg" data-sl-modal-open="sl-cta-modal">
 					<span><?php esc_html_e( 'Start free — take a mock test', 'scorelens' ); ?></span>
 				</a>
 				<a href="#sl-how" class="sl-btn sl-btn--ghost sl-btn--lg">

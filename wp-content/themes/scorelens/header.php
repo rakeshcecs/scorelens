@@ -82,7 +82,7 @@
 				<?php esc_html_e( 'Sign in', 'scorelens' ); ?>
 			</a>
 
-			<a href="#sl-cta" class="sl-btn sl-btn--primary">
+			<a href="#sl-cta" class="sl-btn sl-btn--primary" data-sl-modal-open="sl-cta-modal">
 				<span><?php esc_html_e( 'Start free →', 'scorelens' ); ?></span>
 			</a>
 		</div>
