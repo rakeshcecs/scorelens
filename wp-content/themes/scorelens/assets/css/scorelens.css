@@ -308,7 +308,7 @@ button { font-family: inherit; }
 	.sl-brand-logo { width: 150px; }
 }
 @media (max-width: 480px) {
-	.sl-brand-logo { width: 124px; }
+	/* .sl-brand-logo { width: 124px; } */
 }
 
 .sl-brand-name {
