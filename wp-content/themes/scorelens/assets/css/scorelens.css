@@ -270,12 +270,14 @@ button { font-family: inherit; }
 	align-items: center;
 	-webkit-justify-content: space-between;
 	justify-content: space-between;
+	gap: var(--space-md);
 	padding: 18px var(--sl-container-px);
 	background: color-mix(in srgb, var(--sl-bg) 85%, transparent);
 	-webkit-backdrop-filter: blur(12px);
 	backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--sl-rule);
 }
+/* Brand on left, everything else flows right after a small gap */
 
 .sl-brand {
 	display: -webkit-inline-flex;
@@ -287,6 +289,26 @@ button { font-family: inherit; }
 }
 
 .sl-brand-mark { width: 32px; height: 32px; flex-shrink: 0; }
+
+.sl-brand-logo {
+	width: 200px;
+	height: auto;
+	flex-shrink: 0;
+	display: block;
+	transition: filter .4s ease;
+}
+:root[data-theme="dark"] .sl-brand-logo {
+	filter: brightness(0) invert(1);
+}
+@media (max-width: 1199px) {
+	.sl-brand-logo { width: 170px; }
+}
+@media (max-width: 860px) {
+	.sl-brand-logo { width: 150px; }
+}
+@media (max-width: 480px) {
+	.sl-brand-logo { width: 124px; }
+}
 
 .sl-brand-name {
 	font-weight: 700;
@@ -1635,7 +1657,8 @@ body.sl-modal-locked { overflow: hidden; }
 	:root { --sl-container-px: 20px; }
 
 	/* Nav */
-	.sl-nav { padding: 14px var(--sl-container-px); gap: var(--space-xs); }
+	.sl-nav { padding: 14px; gap: 35px; }
+	.sl-hamburger { -webkit-margin-start: auto; margin-inline-start: auto; }
 	.sl-nav-links { display: none; }
 	.sl-nav-right { gap: var(--space-xs); }
 

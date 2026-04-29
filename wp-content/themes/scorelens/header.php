@@ -18,31 +18,18 @@
 </div>
 <div class="sl-bg-spotlight" aria-hidden="true"></div>
 
-<!-- ════════════ REUSABLE SVG DEFS ════════════ -->
-<svg class="sl-svg-defs" aria-hidden="true" focusable="false">
-	<defs>
-		<symbol id="scorelens-mark" viewBox="0 0 100 100">
-			<circle cx="62" cy="35" r="22" fill="none" stroke="currentColor" stroke-width="7"/>
-			<path d="M 52 22 Q 48 30 52 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-			<line x1="76" y1="20" x2="92" y2="4" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
-			<path d="M 82 4 L 92 4 L 92 14" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-			<path d="M 58 44 C 58 52, 50 56, 40 56 C 28 56, 20 62, 20 72 C 20 82, 28 88, 40 88 C 50 88, 58 84, 62 78 M 40 88 C 32 88, 26 84, 24 78 M 30 44 C 32 38, 38 34, 46 34"
-				fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-		</symbol>
-	</defs>
-</svg>
-
 <!-- ════════════ PRIMARY NAVIGATION ════════════ -->
 <header class="sl-site-header">
 	<nav class="sl-nav" role="navigation" aria-label="<?php esc_attr_e( 'Primary Navigation', 'scorelens' ); ?>">
 
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="sl-brand" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
-			<svg class="sl-brand-mark" viewBox="0 0 100 100" aria-hidden="true">
-				<use href="#scorelens-mark"/>
-			</svg>
-			<span class="sl-brand-name">
-				<?php bloginfo( 'name' ); ?>
-			</span>
+			<img
+				class="sl-brand-logo"
+				src="<?php echo esc_url( SCORELENS_URI . '/assets/images/scorelens_logo-H.svg' ); ?>"
+				alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+				width="160"
+				height="40"
+			/>
 		</a>
 
 		<div class="sl-nav-links" id="sl-primary-nav">

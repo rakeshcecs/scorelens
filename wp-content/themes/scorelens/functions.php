@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ─────────────────────────────────────────────
  * Constants
  * ───────────────────────────────────────────── */
-define( 'SCORELENS_VERSION', '2.0.0' );
+define( 'SCORELENS_VERSION', '2.0.1' );
 define( 'SCORELENS_DIR',     get_template_directory() );
 define( 'SCORELENS_URI',     get_template_directory_uri() );
 

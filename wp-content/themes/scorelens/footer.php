@@ -19,10 +19,13 @@
 	<!-- Brand column -->
 	<div class="sl-foot-brand">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="sl-brand sl-foot-logo">
-			<svg class="sl-brand-mark" viewBox="0 0 100 100" aria-hidden="true">
-				<use href="#scorelens-mark"/>
-			</svg>
-			<span class="sl-brand-name"><?php bloginfo( 'name' ); ?></span>
+			<img
+				class="sl-brand-logo"
+				src="<?php echo esc_url( SCORELENS_URI . '/assets/images/scorelens_logo-H.svg' ); ?>"
+				alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+				width="160"
+				height="40"
+			/>
 		</a>
 		<p class="sl-foot-tag"><?php esc_html_e( 'Simple. Accurate. Effective.', 'scorelens' ); ?></p>
 		<p class="sl-foot-company">
