@@ -1715,10 +1715,10 @@ body.sl-modal-locked { overflow: hidden; }
    27. RESPONSIVE — Mobile < 860 px
    ──────────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
-	:root { --sl-container-px: 20px; }
+	:root { --sl-container-px: 20px !important; }
 
 	/* Nav */
-	.sl-nav { padding: 14px; gap: 35px; }
+	.sl-nav { padding: 14px; gap: var(--space-xs); }
 	.sl-hamburger { -webkit-margin-start: auto; margin-inline-start: auto; }
 	.sl-nav-links { display: none; }
 	.sl-nav-right { gap: var(--space-xs); }
