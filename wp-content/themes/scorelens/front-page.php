@@ -402,7 +402,7 @@ get_header();
 				<li><?php esc_html_e( 'Topic-wise practice (limited)', 'scorelens' ); ?></li>
 				<li><?php esc_html_e( 'Community access', 'scorelens' ); ?></li>
 			</ul>
-			<a href="#" class="sl-btn sl-btn--ghost"><?php esc_html_e( 'Start free', 'scorelens' ); ?></a>
+			<a href="#" class="sl-btn sl-btn--ghost" data-sl-modal-open="sl-cta-modal"><?php esc_html_e( 'Start free', 'scorelens' ); ?></a>
 		</div>
 
 		<!-- Pro Monthly — featured, coming soon -->

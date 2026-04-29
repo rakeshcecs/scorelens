@@ -131,7 +131,6 @@ function scorelens_primary_nav_fallback() {
 		'#sl-features' => __( 'Features',     'scorelens' ),
 		'#sl-how'      => __( 'How it works', 'scorelens' ),
 		'#sl-pricing'  => __( 'Pricing',      'scorelens' ),
-		'#sl-faq'      => __( 'FAQ',          'scorelens' ),
 	];
 	foreach ( $links as $href => $label ) {
 		printf(

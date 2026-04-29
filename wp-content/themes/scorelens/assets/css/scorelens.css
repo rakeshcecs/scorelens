@@ -286,12 +286,13 @@ button { font-family: inherit; }
 	align-items: center;
 	gap: var(--space-xs);
 	color: var(--sl-ink);
+	min-height: 44px;
 }
 
 .sl-brand-mark { width: 32px; height: 32px; flex-shrink: 0; }
 
 .sl-brand-logo {
-	width: 200px;
+	width: 230px;
 	height: auto;
 	flex-shrink: 0;
 	display: block;
@@ -1399,7 +1400,7 @@ button { font-family: inherit; }
 .sl-hamburger--active .sl-hamburger-bar:nth-child(2) { opacity: 0; }
 .sl-hamburger--active .sl-hamburger-bar:nth-child(3) { -webkit-transform: translateY(-6.5px) rotate(-45deg); transform: translateY(-6.5px) rotate(-45deg); }
 
-.sl-nav-links--open {
+.sl-nav-links.sl-nav-links--open {
 	display: -webkit-flex;
 	display: flex;
 	-webkit-flex-direction: column;
@@ -1415,6 +1416,66 @@ button { font-family: inherit; }
 	-webkit-backdrop-filter: blur(12px);
 	backdrop-filter: blur(12px);
 	z-index: 99;
+}
+
+/* Each link in the open hamburger menu is full-width with proper tap padding */
+.sl-nav-links.sl-nav-links--open a {
+	display: -webkit-flex;
+	display: flex;
+	width: 100%;
+	padding: 0 16px;
+	border-radius: var(--sl-radius-sm);
+}
+.sl-nav-links.sl-nav-links--open a:hover,
+.sl-nav-links.sl-nav-links--open a:focus-visible {
+	background: color-mix(in srgb, var(--sl-brand) 6%, transparent);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   23c. SCROLL-TO-TOP BUTTON
+   ──────────────────────────────────────────────────────────────── */
+.sl-scroll-top {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: var(--sl-brand);
+	color: var(--sl-bg);
+	border: none;
+	cursor: pointer;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+	box-shadow: var(--sl-shadow);
+	opacity: 0;
+	visibility: hidden;
+	-webkit-transform: translateY(8px);
+	transform: translateY(8px);
+	transition: opacity .25s ease, visibility .25s ease, background .25s ease, -webkit-transform .25s var(--sl-ease-spring);
+	transition: opacity .25s ease, visibility .25s ease, background .25s ease, transform .25s var(--sl-ease-spring);
+	z-index: 90;
+}
+.sl-scroll-top--visible {
+	opacity: 1;
+	visibility: visible;
+	-webkit-transform: translateY(0);
+	transform: translateY(0);
+}
+.sl-scroll-top:hover,
+.sl-scroll-top:focus-visible {
+	background: var(--sl-brand-soft);
+	-webkit-transform: translateY(-2px);
+	transform: translateY(-2px);
+}
+.sl-scroll-top svg { width: 18px; height: 18px; pointer-events: none; }
+
+@media (max-width: 480px) {
+	.sl-scroll-top { bottom: 16px; right: 16px; }
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -1709,6 +1770,13 @@ body.sl-modal-locked { overflow: hidden; }
 	.sl-hero-visual { height: 360px; }
 	.sl-steps { grid-template-columns: 1fr; }
 	.sl-site-footer { grid-template-columns: 1fr; }
+
+	/* Stack hero CTAs vertically — prevents text clipping on phones */
+	.sl-hero-cta { -webkit-flex-direction: column; flex-direction: column; }
+	.sl-hero-cta .sl-btn { width: 100%; }
+
+	/* Badge wraps to multi-line so long text doesn't overflow narrow phones */
+	.sl-badge { max-width: 100%; text-align: center; }
 }
 
 /* ────────────────────────────────────────────────────────────────

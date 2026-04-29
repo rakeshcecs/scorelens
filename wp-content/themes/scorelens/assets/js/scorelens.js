@@ -263,6 +263,15 @@
 				hamburger.classList.remove( 'sl-hamburger--active' );
 			}
 		} );
+
+		/* Close menu when a nav link is clicked */
+		navLinks.addEventListener( 'click', function ( e ) {
+			if ( e.target.tagName === 'A' ) {
+				navLinks.classList.remove( 'sl-nav-links--open' );
+				hamburger.setAttribute( 'aria-expanded', 'false' );
+				hamburger.classList.remove( 'sl-hamburger--active' );
+			}
+		} );
 	}
 
 	/* ══════════════════════════════════════════════════════════
@@ -328,6 +337,38 @@
 	}
 
 	/* ══════════════════════════════════════════════════════════
+	   SCROLL-TO-TOP BUTTON
+	   Injects a floating button that appears after the user
+	   scrolls past a threshold and smooth-scrolls back to top.
+	   ══════════════════════════════════════════════════════════ */
+	function initScrollToTop() {
+		var btn = document.createElement( 'button' );
+		btn.type      = 'button';
+		btn.className = 'sl-scroll-top';
+		btn.setAttribute( 'aria-label', 'Scroll to top' );
+		btn.innerHTML =
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+				'<path d="M18 15l-6-6-6 6"/>' +
+			'</svg>';
+		document.body.appendChild( btn );
+
+		btn.addEventListener( 'click', function () {
+			window.scrollTo( { top: 0, behavior: 'smooth' } );
+		} );
+
+		var threshold = 300;
+		function toggle() {
+			if ( window.scrollY > threshold ) {
+				btn.classList.add( 'sl-scroll-top--visible' );
+			} else {
+				btn.classList.remove( 'sl-scroll-top--visible' );
+			}
+		}
+		window.addEventListener( 'scroll', toggle, { passive: true } );
+		toggle();
+	}
+
+	/* ══════════════════════════════════════════════════════════
 	   INIT — wait for DOM
 	   ══════════════════════════════════════════════════════════ */
 	document.addEventListener( 'DOMContentLoaded', function () {
@@ -340,6 +381,7 @@
 		initAvatarFallback();
 		initMobileNav();
 		initModal();
+		initScrollToTop();
 	} );
 
 } )();
