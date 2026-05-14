@@ -638,11 +638,11 @@ button { font-family: inherit; }
 	box-shadow: var(--sl-shadow);
 	z-index: 3;
 	font-size: 13px;
-	-webkit-animation: sl-float-card 6s ease-in-out infinite;
-	animation: sl-float-card 6s ease-in-out infinite;
+	-webkit-animation: sl-float-card 15s ease-in-out infinite;
+	animation: sl-float-card 15s ease-in-out infinite;
 }
 .sl-card--1 { top: 30px; left: -30px; -webkit-animation-delay: 0s; animation-delay: 0s; }
-.sl-card--2 { bottom: 80px; right: -20px; -webkit-animation-delay: 1s; animation-delay: 1s; }
+.sl-card--2 { bottom: 80px; right: -20px; -webkit-animation-delay: 4s; animation-delay: 4s; }
 
 @-webkit-keyframes sl-float-card { 0%,100% { -webkit-transform:translateY(0); transform:translateY(0); } 50% { -webkit-transform:translateY(-8px); transform:translateY(-8px); } }
 @keyframes sl-float-card         { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
@@ -1777,14 +1777,16 @@ body.sl-modal-locked { overflow: hidden; }
 	.sl-hero-inner { grid-template-columns: 1fr; gap: 36px; }
 	.sl-hero-visual { height: 420px; -webkit-order: 2; order: 2; margin: 0 4px; }
 	.sl-card--1 { top: 14px; left: 10px; font-size: 12px; padding: 10px 14px; }
-	.sl-card--2 { bottom: 14px; right: 10px; font-size: 12px; padding: 10px 14px; }
+	.sl-card--2 { top: 150px; bottom: auto; right: 10px; font-size: 12px; padding: 10px 14px; }
 	.sl-card-value { font-size: 17px; }
 	.sl-hero-photo-overlay { left: 18px; right: 18px; bottom: 18px; }
 	.sl-hero-photo-overlay h4 { font-size: 16px; }
 	.sl-hero-cta { width: 100%; }
 	.sl-hero-cta .sl-btn { -webkit-flex: 1; flex: 1; -webkit-justify-content: center; justify-content: center; min-width: 140px; }
-	.sl-showcase { padding: 48px var(--space-md); }
+	.sl-showcase { padding: 48px var(--space-md); max-width: 100%; box-sizing: border-box; }
 	.sl-showcase-grid { grid-template-columns: 1fr; gap: var(--space-xl); }
+	.sl-showcase-grid > * { min-width: 0; max-width: 100%; }
+	.sl-showcase p, .sl-showcase h3 { max-width: 100%; -webkit-overflow-wrap: break-word; overflow-wrap: break-word; word-wrap: break-word; }
 	.sl-testimonials { grid-template-columns: 1fr; }
 	.sl-pricing { grid-template-columns: 1fr; }
 }
@@ -1855,6 +1857,11 @@ body.sl-modal-locked { overflow: hidden; }
 
 	/* Badge wraps to multi-line so long text doesn't overflow narrow phones */
 	.sl-badge { max-width: 100%; text-align: center; }
+
+	/* Analytics showcase: tighter padding + let grid children shrink so
+	   paragraph text isn't clipped by the showcase's overflow:hidden. */
+	.sl-showcase { padding: 40px 18px; }
+	.sl-showcase-grid > * { min-width: 0; }
 }
 
 /* ────────────────────────────────────────────────────────────────
