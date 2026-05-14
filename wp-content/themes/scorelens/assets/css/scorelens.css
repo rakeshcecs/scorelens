@@ -308,7 +308,7 @@ button { font-family: inherit; }
 	.sl-brand-logo { width: 150px; }
 }
 @media (max-width: 480px) {
-	/* .sl-brand-logo { width: 124px; } */
+	.sl-site-header .sl-brand-logo { width: 124px; }
 }
 
 .sl-brand-name {
@@ -1602,6 +1602,7 @@ button { font-family: inherit; }
 	margin-top: var(--space-sm);
 	text-align: center;
 }
+
 .sl-modal-body button.submit-element {
 	width: 100%;
 	padding: 14px 28px !important;
@@ -1777,6 +1778,7 @@ body.sl-modal-locked { overflow: hidden; }
 	.sl-hero-inner { grid-template-columns: 1fr; gap: 36px; }
 	.sl-hero-visual { height: 420px; -webkit-order: 2; order: 2; margin: 0 4px; }
 	.sl-card--1 { top: 14px; left: 10px; font-size: 12px; padding: 10px 14px; }
+/* 	.sl-card--2 { bottom: 14px; right: 10px; font-size: 12px; padding: 10px 14px; } */
 	.sl-card--2 { top: 150px; bottom: auto; right: 10px; font-size: 12px; padding: 10px 14px; }
 	.sl-card-value { font-size: 17px; }
 	.sl-hero-photo-overlay { left: 18px; right: 18px; bottom: 18px; }
@@ -1862,6 +1864,7 @@ body.sl-modal-locked { overflow: hidden; }
 	   paragraph text isn't clipped by the showcase's overflow:hidden. */
 	.sl-showcase { padding: 40px 18px; }
 	.sl-showcase-grid > * { min-width: 0; }
+	.sl-stat-num { font-size: 20px; }
 }
 
 /* ────────────────────────────────────────────────────────────────
