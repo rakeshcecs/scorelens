@@ -5,6 +5,7 @@ namespace GoDaddy\WordPress\OAuth\Interceptors;
 use DateInterval;
 use DateTime;
 use Exception;
+use GoDaddy\WordPress\MWC\Common\Interceptors\AbstractInterceptor;
 use GoDaddy\WordPress\MWC\Common\Schedule\Exceptions\InvalidScheduleException;
 use GoDaddy\WordPress\MWC\Common\Schedule\Schedule;
 use GoDaddy\WordPress\OAuth\Interceptors\Handlers\TokenRefreshHandler;

@@ -218,6 +218,10 @@ class Schedule
 
         $unscheduleFunction = $all ? 'as_unschedule_all_actions' : 'as_unschedule_action';
 
+        if (! function_exists($unscheduleFunction)) { // @phpstan-ignore function.alreadyNarrowedType
+            return;
+        }
+
         $unscheduleFunction(
             $this->name,
             $this->arguments,
@@ -242,7 +246,11 @@ class Schedule
         }
 
         // `as_next_scheduled_action()` is less performant than the function above but will work in older WooCommerce versions
-        return (bool) as_next_scheduled_action($this->name, $this->arguments, $this->collectionName);
+        if (function_exists('as_next_scheduled_action')) {
+            return (bool) as_next_scheduled_action($this->name, $this->arguments, $this->collectionName);
+        }
+
+        return false;
     }
 
     /**
@@ -252,7 +260,9 @@ class Schedule
      */
     public function getNextScheduledTime() : ?DateTime
     {
-        $timestamp = $this->name ? as_next_scheduled_action($this->name, $this->arguments, $this->collectionName) : null;
+        $timestamp = $this->name && function_exists('as_next_scheduled_action')
+            ? as_next_scheduled_action($this->name, $this->arguments, $this->collectionName)
+            : null;
 
         try {
             return is_int($timestamp) ? new DateTime('@'.$timestamp) : null;

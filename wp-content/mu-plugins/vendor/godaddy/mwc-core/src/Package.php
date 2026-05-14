@@ -127,7 +127,7 @@ class Package extends BasePlatformPlugin
     protected function getConfigurationValues() : array
     {
         return array_merge(parent::getConfigurationValues(), [
-            'version'    => '5.1.3',
+            'version'    => '5.1.7',
             'plugin_dir' => dirname(__DIR__),
             'plugin_url' => plugin_dir_url(__DIR__),
         ]);

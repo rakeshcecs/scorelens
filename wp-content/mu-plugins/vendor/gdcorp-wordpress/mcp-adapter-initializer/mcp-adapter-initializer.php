@@ -11,7 +11,7 @@
  * Plugin URI:        https://github.com/gdcorp-wordpress/mcp-adapter-initializer
  * Description:       Initialize a custom MCP server with custom tools and authentication.
  * Requires at least: 6.8
- * Version:           1.3.0
+ * Version:           1.5.3
  * Requires PHP:      8.1
  * Author:            GoDaddy
  * Author URI:        https://www.godaddy.com
@@ -29,6 +29,8 @@ use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Server\Stateless_JWT_Tra
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Activate_Plugin_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Activate_Theme_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Create_Navigation_Tool;
+use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Create_Page_Draft_Tool;
+use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Draft_Page_Helper;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Create_Post_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Deactivate_Plugin_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Delete_Media_Tool;
@@ -37,6 +39,7 @@ use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Delete_Page_Revisi
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Delete_Post_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Delete_Template_Part_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Delete_Template_Tool;
+use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Discard_Page_Draft_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_All_Media_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Block_Patterns_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Post_By_Option_Name_Tool;
@@ -44,6 +47,7 @@ use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Block_Types_To
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Global_Styles_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Media_By_Id_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Navigation_Tool;
+use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Page_Draft_Status_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Page_Revision_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Plugin_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Get_Post_Tool;
@@ -54,11 +58,13 @@ use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Navigation_Re
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Navigations_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Page_Revisions_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Plugins_Tool;
+use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Post_Revisions_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Posts_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Template_Part_Revisions_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Template_Parts_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Template_Revisions_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\List_Templates_Tool;
+use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Publish_Page_Draft_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Restore_Post_Revision_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Site_Info_Tool;
 use GoDaddy\WordPress\Plugins\MCPAdapterInitializer\MCP\Tools\Switch_Theme_Tool;
@@ -99,7 +105,7 @@ if ( file_exists( $gd_mcp_vendor_autoloader ) ) {
 }
 
 // Define plugin constants.
-define( 'GD_MCP_ADAPTER_INITIALIZER_VERSION', '1.3.0' );
+define( 'GD_MCP_ADAPTER_INITIALIZER_VERSION', '1.5.3' );
 define( 'GD_MCP_ADAPTER_INITIALIZER_PLUGIN_FILE', __FILE__ );
 define( 'GD_MCP_ADAPTER_INITIALIZER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GD_MCP_ADAPTER_INITIALIZER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -207,6 +213,12 @@ class MCP_Adapter_Initializer {
 
 		add_filter( 'gdl_unrestricted_rest_endpoints', array( $this, 'add_unrestricted_endpoints' ) );
 
+		// Draft page data integrity: clean up orphaned meta when posts are deleted.
+		add_action( 'before_delete_post', array( Draft_Page_Helper::class, 'cleanup_draft_meta' ) );
+
+		// REST endpoints for browser-based draft publish/discard (used by the WP admin banner).
+		add_action( 'rest_api_init', array( Draft_Page_Helper::class, 'register_rest_routes' ) );
+
 		// Fix GoDaddy system plugin block count issue with NULL block names.
 		add_action( 'init', array( $this, 'fix_gd_block_count_null_issue' ), 1 );
 	}
@@ -294,7 +306,7 @@ class MCP_Adapter_Initializer {
 		$this->tools['delete_media']                 = Delete_Media_Tool::get_instance();
 		$this->tools['delete_post']                  = Delete_Post_Tool::get_instance();
 		$this->tools['list_posts']                   = List_Posts_Tool::get_instance();
-		$this->tools['list_page_revisions']          = List_Page_Revisions_Tool::get_instance();
+		$this->tools['list_post_revisions']          = List_Post_Revisions_Tool::get_instance();
 		$this->tools['get_page_revision']            = Get_Page_Revision_Tool::get_instance();
 		$this->tools['delete_page_revision']         = Delete_Page_Revision_Tool::get_instance();
 		$this->tools['restore_post_revision']        = Restore_Post_Revision_Tool::get_instance();
@@ -313,6 +325,16 @@ class MCP_Adapter_Initializer {
 		$this->tools['delete_template_part']         = Delete_Template_Part_Tool::get_instance();
 		$this->tools['list_template_revisions']      = List_Template_Revisions_Tool::get_instance();
 		$this->tools['list_template_part_revisions'] = List_Template_Part_Revisions_Tool::get_instance();
+
+		// TODO: Remove once Site Designer API ships the list-post-revisions tool ID.
+		// Legacy alias so callers still hitting `gd-mcp/list-page-revisions` keep working.
+		// Kept outside the aligned block above so its explanatory comment does not
+		// split PHPCS's alignment group.
+		$this->tools['list_page_revisions']   = List_Page_Revisions_Tool::get_instance();
+		$this->tools['create_page_draft']     = Create_Page_Draft_Tool::get_instance();
+		$this->tools['get_page_draft_status'] = Get_Page_Draft_Status_Tool::get_instance();
+		$this->tools['publish_page_draft']    = Publish_Page_Draft_Tool::get_instance();
+		$this->tools['discard_page_draft']    = Discard_Page_Draft_Tool::get_instance();
 	}
 
 	/**

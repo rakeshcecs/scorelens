@@ -3,8 +3,11 @@
 namespace GoDaddy\WordPress\OAuth;
 
 use Exception;
+use GoDaddy\WordPress\MWC\Common\Components\Contracts\ComponentContract;
+use GoDaddy\WordPress\MWC\Common\Components\Traits\HasComponentsFromContainerTrait;
 use GoDaddy\WordPress\MWC\Common\Container\ContainerFactory;
 use GoDaddy\WordPress\MWC\Common\Container\Contracts\ContainerContract;
+use GoDaddy\WordPress\MWC\Common\Exceptions\SentryException;
 use GoDaddy\WordPress\MWC\Common\Helpers\TypeHelper;
 use GoDaddy\WordPress\OAuth\Admin\ConnectionPage;
 use GoDaddy\WordPress\OAuth\Interceptors\AuthorizationInterceptor;
@@ -21,6 +24,8 @@ use GoDaddy\WordPress\OAuth\Providers\OAuthServiceProvider;
  */
 class Package
 {
+    use HasComponentsFromContainerTrait;
+
     /**
      * Package ID.
      */
@@ -49,6 +54,19 @@ class Package
      * @var bool
      */
     private bool $initialized = false;
+
+    /**
+     * Component classes to load.
+     *
+     * @var class-string<ComponentContract>[]
+     */
+    protected array $componentClasses = [
+        AuthorizationInterceptor::class,
+        CallbackInterceptor::class,
+        DisconnectInterceptor::class,
+        TokenRefreshInterceptor::class,
+        ConnectionPage::class,
+    ];
 
     /**
      * Get the singleton instance.
@@ -126,11 +144,9 @@ class Package
     /**
      * Handle WordPress init hook.
      *
-     * Loads interceptors on every request and admin pages on admin requests,
-     * but only when the filter allows initialization.
+     * Loads all registered components, but only when the filter allows initialization.
      *
      * @return void
-     * @throws Exception
      */
     public function onInit() : void
     {
@@ -138,8 +154,11 @@ class Package
             return;
         }
 
-        $this->loadInterceptors();
-        $this->loadAdminPages();
+        try {
+            $this->loadComponents();
+        } catch (Exception $exception) {
+            SentryException::getNewInstance("Failed to load components for godaddy-oauth: {$exception->getMessage()}", $exception);
+        }
     }
 
     /**
@@ -150,95 +169,6 @@ class Package
     protected function shouldInitialize() : bool
     {
         return TypeHelper::bool(apply_filters(self::FILTER_SHOULD_INITIALIZE, false), false);
-    }
-
-    /**
-     * Load OAuth interceptors.
-     *
-     * Interceptors are loaded on every request (frontend and admin)
-     * to handle authorization and callback requests.
-     *
-     * @return void
-     * @throws Exception
-     */
-    protected function loadInterceptors() : void
-    {
-        $this->getAuthorizationInterceptor()->load();
-        $this->getCallbackInterceptor()->load();
-        $this->getDisconnectInterceptor()->load();
-        $this->getTokenRefreshInterceptor()->load();
-    }
-
-    /**
-     * Load admin pages.
-     *
-     * Admin pages are only loaded on admin requests.
-     *
-     * @return void
-     * @throws Exception
-     */
-    protected function loadAdminPages() : void
-    {
-        if (! is_admin()) {
-            return;
-        }
-
-        $this->getConnectionPage()->load();
-    }
-
-    /**
-     * Get authorization interceptor instance.
-     *
-     * @return AuthorizationInterceptor
-     * @throws Exception
-     */
-    protected function getAuthorizationInterceptor() : AuthorizationInterceptor
-    {
-        return $this->getContainer()->get(AuthorizationInterceptor::class);
-    }
-
-    /**
-     * Get callback interceptor instance.
-     *
-     * @return CallbackInterceptor
-     * @throws Exception
-     */
-    protected function getCallbackInterceptor() : CallbackInterceptor
-    {
-        return $this->getContainer()->get(CallbackInterceptor::class);
-    }
-
-    /**
-     * Get disconnect interceptor instance.
-     *
-     * @return DisconnectInterceptor
-     * @throws Exception
-     */
-    protected function getDisconnectInterceptor() : DisconnectInterceptor
-    {
-        return $this->getContainer()->get(DisconnectInterceptor::class);
-    }
-
-    /**
-     * Get token refresh interceptor instance.
-     *
-     * @return TokenRefreshInterceptor
-     * @throws Exception
-     */
-    protected function getTokenRefreshInterceptor() : TokenRefreshInterceptor
-    {
-        return $this->getContainer()->get(TokenRefreshInterceptor::class);
-    }
-
-    /**
-     * Get connection page instance.
-     *
-     * @return ConnectionPage
-     * @throws Exception
-     */
-    protected function getConnectionPage() : ConnectionPage
-    {
-        return $this->getContainer()->get(ConnectionPage::class);
     }
 
     /**

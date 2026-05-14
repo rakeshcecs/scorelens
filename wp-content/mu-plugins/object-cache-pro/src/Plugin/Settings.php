@@ -150,8 +150,8 @@ trait Settings
         $isMultisite = is_multisite();
         $inNetworkAdmin = is_network_admin();
 
-        $update = get_site_transient('objectcache_update');
-        $updateAvailable = version_compare($update->version ?? '', '12.0', '>');
+        $update = $this->updatesEnabled() ? get_site_transient('objectcache_update') : null;
+        $updateAvailable = version_compare($update->version ?? '', $this->version, '>');
 
         $arguments = [
             $isMultisite && $inNetworkAdmin

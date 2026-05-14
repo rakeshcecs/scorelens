@@ -81,7 +81,13 @@ trait ClusterConnection
             $parameter = \reset($primaries);
         }
 
-        return $this->command('ping', [$parameter]);
+        $result = $this->command('ping', [$parameter]);
+
+        if ($result === false && \is_array($parameter)) {
+            throw new ConnectionException(\sprintf('Unknown node %s:%d', $parameter[0] ?? '', $parameter[1] ?? 0));
+        }
+
+        return $result;
     }
 
     /**
@@ -118,7 +124,13 @@ trait ClusterConnection
             $key = \reset($primaries);
         }
 
-        return $this->command('info', array_filter([$key, $section]));
+        $result = $this->command('info', array_filter([$key, $section]));
+
+        if ($result === false && \is_array($key)) {
+            throw new ConnectionException(\sprintf('Unknown node %s:%d', $key[0] ?? '', $key[1] ?? 0));
+        }
+
+        return $result;
     }
 
     /**

@@ -8,7 +8,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-10T18:25:30+00:00\n"
+"POT-Creation-Date: 2026-04-27T21:43:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mwc-core\n"
@@ -70,22 +70,26 @@ msgstr "स्‍टोर का ड‍िस्प्ले नाम।"
 msgid "The unique identifier for the store."
 msgstr "स्‍टोर के लिए यूनीक आइडेंट‍िफ़ायर।"
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:94
+#: src/Auth/API/Controllers/OAuth/TokenController.php:60
+msgid "The OAuth token provider is not available."
+msgstr "OAuth टोकन प्रदाता उपलब्ध नहीं है।"
+
+#: src/Auth/API/Controllers/OAuth/TokenController.php:99
 #: src/Auth/API/Controllers/TokenController.php:84
 msgid "The access token string as issued by the authorization server."
 msgstr "प्रमाणीकरण सर्वर द्वारा जारी एक्सेस टोकन स्ट्रिंग।"
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:100
+#: src/Auth/API/Controllers/OAuth/TokenController.php:105
 #: src/Auth/API/Controllers/TokenController.php:90
 msgid "Number of seconds to expiration of the access token."
 msgstr "एक्सेस टोकन की समयसीमा समाप्त होने में होने वाले सेकंड।"
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:106
+#: src/Auth/API/Controllers/OAuth/TokenController.php:111
 #: src/Auth/API/Controllers/TokenController.php:96
 msgid "The scope the token granted."
 msgstr "दिए हुए टोकन का स्कोप।"
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:112
+#: src/Auth/API/Controllers/OAuth/TokenController.php:117
 #: src/Auth/API/Controllers/TokenController.php:108
 msgid "The type of token this is."
 msgstr "यह जिस प्रकार का टोकन है।"
@@ -379,8 +383,8 @@ msgstr "पिकअप लोकेशन की जानकारी"
 msgid "Missing or invalid store ID"
 msgstr "गायब या अमान्य स्‍टोर आईडी"
 
-#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:57
-#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:58
+#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:80
+#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:81
 msgid "GoDaddy Store"
 msgstr "GoDaddy स्टोर"
 

@@ -28,7 +28,7 @@ final class Stacktrace
         }
         foreach ($frames as $frame) {
             if (!$frame instanceof Frame) {
-                throw new \UnexpectedValueException(sprintf('Expected an instance of the "%s" class. Got: "%s".', Frame::class, get_debug_type($frame)));
+                throw new \UnexpectedValueException(\sprintf('Expected an instance of the "%s" class. Got: "%s".', Frame::class, get_debug_type($frame)));
             }
         }
         $this->frames = $frames;
@@ -76,7 +76,7 @@ final class Stacktrace
     public function removeFrame(int $index): self
     {
         if (!isset($this->frames[$index])) {
-            throw new \OutOfBoundsException(sprintf('Cannot remove the frame at index %d.', $index));
+            throw new \OutOfBoundsException(\sprintf('Cannot remove the frame at index %d.', $index));
         }
         if (\count($this->frames) === 1) {
             throw new \RuntimeException('Cannot remove all frames from the stacktrace.');

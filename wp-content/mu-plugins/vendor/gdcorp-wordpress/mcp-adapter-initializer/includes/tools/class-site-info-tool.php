@@ -185,6 +185,10 @@ class Site_Info_Tool extends Base_Tool {
 						),
 					),
 				),
+				'is_published'      => array(
+					'type'        => 'boolean',
+					'description' => __( 'Whether the site has been published (gdl_site_published option is set)', 'mcp-adapter-initializer' ),
+				),
 			),
 		);
 	}
@@ -201,6 +205,7 @@ class Site_Info_Tool extends Base_Tool {
 			'site_url'          => get_site_url(),
 			'description'       => get_bloginfo( 'description' ),
 			'wordpress_version' => get_bloginfo( 'version' ),
+			'is_published'      => (bool) get_option( 'gdl_site_published', false ),
 		);
 
 		// Add post/page statistics if requested

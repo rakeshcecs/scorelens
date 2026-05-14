@@ -126,4 +126,30 @@ final class Transaction
 
         return $this;
     }
+
+    /**
+     * Human-readable summary of this transaction — its type, command count
+     * and unique command names — suitable for log messages.
+     *
+     * @return string
+     */
+    public function describe(): string
+    {
+        $type = \strtoupper($this->type);
+        $count = \count($this->commands);
+
+        if ($count === 0) {
+            return "{$type} transaction";
+        }
+
+        $names = \array_unique(\array_map(static function ($command) {
+            return \strtoupper($command[0]);
+        }, $this->commands));
+
+        \sort($names);
+
+        $word = $count === 1 ? 'command' : 'commands';
+
+        return "{$type} transaction with {$count} {$word} (" . \implode(', ', $names) . ')';
+    }
 }

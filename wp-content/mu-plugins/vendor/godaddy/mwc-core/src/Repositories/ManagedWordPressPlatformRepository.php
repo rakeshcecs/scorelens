@@ -15,6 +15,7 @@ use GoDaddy\WordPress\MWC\Common\Platforms\Repositories\AbstractPlatformReposito
 use GoDaddy\WordPress\MWC\Common\Repositories\WordPress\SiteRepository;
 use GoDaddy\WordPress\MWC\Common\Repositories\WordPressRepository;
 use GoDaddy\WordPress\MWC\Common\Stores\Contracts\StoreRepositoryContract;
+use GoDaddy\WordPress\MWC\Core\Features\Worldpay\Repositories\FederationPartnerRepository;
 use GoDaddy\WordPress\MWC\Core\HostingPlans\Builders\ManagedWordPress\HostingPlanBuilder;
 use GoDaddy\WordPress\MWC\Core\Platforms\Builders\PlatformEnvironmentBuilder;
 use GoDaddy\WordPress\MWC\Core\Stores\Repositories\StoreRepository;
@@ -205,7 +206,31 @@ class ManagedWordPressPlatformRepository extends AbstractPlatformRepository
      */
     public function getGoDaddyCustomer() : GoDaddyCustomerContract
     {
-        return GoDaddyCustomer::seed(['id' => $this->getGoDaddyCustomerId()]);
+        return GoDaddyCustomer::seed([
+            'id'                  => $this->getGoDaddyCustomerId(),
+            'federationPartnerId' => $this->getFederationPartnerId(),
+        ]);
+    }
+
+    /**
+     * Gets the federation partner ID for the current customer.
+     */
+    protected function getFederationPartnerId() : string
+    {
+        $customerId = $this->getGoDaddyCustomerId();
+
+        if ($customerId === '') {
+            return '';
+        }
+
+        $uuid = FederationPartnerRepository::getNewInstance()->getFederationPartnerId($customerId);
+        $worldpayFederationPartnerId = TypeHelper::string(Configuration::get('features.worldpay.fpid'), '');
+
+        if ($uuid !== null && $worldpayFederationPartnerId !== '' && $uuid === $worldpayFederationPartnerId) {
+            return 'WORLDPAY';
+        }
+
+        return '';
     }
 
     /**

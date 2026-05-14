@@ -15,6 +15,7 @@ use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Providers\DataObject
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Providers\DataObjects\ProductRequestInputs\UpdateSkuInput;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Providers\DataObjects\ProductRequestOutputs\SkuRequestOutput;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Services\Mapping\SkuMappingService;
+use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Services\Traits\HasUpdateLockTrait;
 use GoDaddy\WordPress\MWC\Core\WooCommerce\Models\Products\Product;
 
 /**
@@ -25,6 +26,9 @@ use GoDaddy\WordPress\MWC\Core\WooCommerce\Models\Products\Product;
 class SkuService
 {
     use CanConvertProductMediaObjectsTrait;
+    use HasUpdateLockTrait;
+
+    protected const UPDATE_LOCK_TRANSIENT_PREFIX = 'godaddy_mwc_sku_updating_';
 
     /** @var CommerceContextContract */
     protected CommerceContextContract $commerceContext;
@@ -93,10 +97,10 @@ class SkuService
      */
     public function update(CreateOrUpdateProductOperationContract $operation, string $skuId) : SkuRequestOutput
     {
-        // Convert WooCommerce product to SKU data
         $updateSkuInput = $this->getUpdateInput($operation, $skuId);
 
-        // Update via API provider (response will include SKU Group and SKU data)
+        $this->setUpdateLock($skuId);
+
         $skuResponse = $this->catalogProvider->skus()->update($updateSkuInput);
 
         if (! $skuResponse->sku->id) {

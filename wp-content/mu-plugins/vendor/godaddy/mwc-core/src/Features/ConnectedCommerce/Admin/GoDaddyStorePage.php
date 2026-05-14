@@ -4,19 +4,25 @@ namespace GoDaddy\WordPress\MWC\Core\Features\ConnectedCommerce\Admin;
 
 use Exception;
 use GoDaddy\WordPress\MWC\Common\Auth\Exceptions\CredentialsCreateFailedException;
+use GoDaddy\WordPress\MWC\Common\Components\Contracts\ConditionalComponentContract;
 use GoDaddy\WordPress\MWC\Common\Components\Contracts\DelayedInstantiationComponentContract;
+use GoDaddy\WordPress\MWC\Common\Container\ContainerFactory;
 use GoDaddy\WordPress\MWC\Common\Content\AbstractAdminPage;
 use GoDaddy\WordPress\MWC\Common\Register\Register;
 use GoDaddy\WordPress\MWC\Core\Auth\Providers\GoDaddy\Contracts\ThreeLeggedOAuthTokenProviderContract;
 use GoDaddy\WordPress\MWC\Core\Pages\Traits\CanHideWordPressAdminNoticesTrait;
+use Throwable;
 
 /**
  * GoDaddy Store settings page.
  *
  * This class implements {@see DelayedInstantiationComponentContract} to ensure that a new instance
  * is created after the OAuth package has been loaded and its components are available in the DI container.
+ * It additionally implements {@see ConditionalComponentContract} to decline loading when the OAuth token
+ * provider contract cannot be resolved — on misconfigured sites the admin page would otherwise fatal
+ * via HasComponentsFromContainerTrait's no-arg fallback (see MWC-19586).
  */
-class GoDaddyStorePage extends AbstractAdminPage implements DelayedInstantiationComponentContract
+class GoDaddyStorePage extends AbstractAdminPage implements DelayedInstantiationComponentContract, ConditionalComponentContract
 {
     use CanHideWordPressAdminNoticesTrait;
 
@@ -43,6 +49,23 @@ class GoDaddyStorePage extends AbstractAdminPage implements DelayedInstantiation
                 ->execute();
         } catch (Exception $exception) {
             // silently fail if we can't register the hook
+        }
+    }
+
+    /**
+     * Determines whether this component should load.
+     *
+     * Returns false on sites where the OAuth token provider contract cannot be resolved so that
+     * the admin page is skipped rather than fataling on its required constructor argument (MWC-19586).
+     */
+    public static function shouldLoad() : bool
+    {
+        try {
+            ContainerFactory::getInstance()->getSharedContainer()->get(ThreeLeggedOAuthTokenProviderContract::class);
+
+            return true;
+        } catch (Throwable $throwable) {
+            return false;
         }
     }
 

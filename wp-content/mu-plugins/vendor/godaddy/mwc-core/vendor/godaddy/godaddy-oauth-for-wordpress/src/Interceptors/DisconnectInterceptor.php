@@ -2,6 +2,7 @@
 
 namespace GoDaddy\WordPress\OAuth\Interceptors;
 
+use GoDaddy\WordPress\MWC\Common\Interceptors\AbstractInterceptor;
 use GoDaddy\WordPress\OAuth\Interceptors\Handlers\DisconnectHandler;
 
 /**

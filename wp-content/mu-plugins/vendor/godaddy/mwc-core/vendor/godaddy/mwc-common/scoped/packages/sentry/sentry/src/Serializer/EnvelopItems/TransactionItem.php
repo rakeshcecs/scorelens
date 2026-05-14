@@ -4,20 +4,29 @@ declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Serializer\EnvelopItems;
 
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Event;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\EventType;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Serializer\Traits\BreadcrumbSeralizerTrait;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\Span;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\TransactionMetadata;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Util\JSON;
 /**
  * @internal
+ *
+ * @phpstan-type MetricsSummary array{
+ *     min: int|float,
+ *     max: int|float,
+ *     sum: int|float,
+ *     count: int,
+ *     tags: array<string>,
+ * }
  */
 class TransactionItem implements EnvelopeItemInterface
 {
     use BreadcrumbSeralizerTrait;
     public static function toEnvelopeItem(Event $event): string
     {
-        $header = ['type' => (string) $event->getType(), 'content_type' => 'application/json'];
-        $payload = ['timestamp' => $event->getTimestamp(), 'platform' => 'php', 'sdk' => ['name' => $event->getSdkIdentifier(), 'version' => $event->getSdkVersion()]];
+        $header = ['type' => (string) EventType::transaction(), 'content_type' => 'application/json'];
+        $payload = ['timestamp' => $event->getTimestamp(), 'platform' => 'php', 'sdk' => $event->getSdkPayload()];
         if ($event->getStartTimestamp() !== null) {
             $payload['start_timestamp'] = $event->getStartTimestamp();
         }
@@ -58,7 +67,7 @@ class TransactionItem implements EnvelopeItemInterface
         }
         $runtimeContext = $event->getRuntimeContext();
         if ($runtimeContext !== null) {
-            $payload['contexts']['runtime'] = ['name' => $runtimeContext->getName(), 'version' => $runtimeContext->getVersion()];
+            $payload['contexts']['runtime'] = ['name' => $runtimeContext->getName(), 'sapi' => $runtimeContext->getSAPI(), 'version' => $runtimeContext->getVersion()];
         }
         if (!empty($event->getContexts())) {
             $payload['contexts'] = array_merge($payload['contexts'] ?? [], $event->getContexts());
@@ -74,12 +83,12 @@ class TransactionItem implements EnvelopeItemInterface
         if ($transactionMetadata instanceof TransactionMetadata) {
             $payload['transaction_info']['source'] = (string) $transactionMetadata->getSource();
         }
-        return sprintf("%s\n%s", JSON::encode($header), JSON::encode($payload));
+        return \sprintf("%s\n%s", JSON::encode($header), JSON::encode($payload));
     }
     /**
      * @return array<string, mixed>
      *
-     * @psalm-return array{
+     * @phpstan-return array{
      *     span_id: string,
      *     trace_id: string,
      *     parent_span_id?: string,
@@ -88,13 +97,14 @@ class TransactionItem implements EnvelopeItemInterface
      *     status?: string,
      *     description?: string,
      *     op?: string,
+     *     origin: string,
      *     data?: array<string, mixed>,
      *     tags?: array<string, string>
      * }
      */
     protected static function serializeSpan(Span $span): array
     {
-        $result = ['span_id' => (string) $span->getSpanId(), 'trace_id' => (string) $span->getTraceId(), 'start_timestamp' => $span->getStartTimestamp()];
+        $result = ['span_id' => (string) $span->getSpanId(), 'trace_id' => (string) $span->getTraceId(), 'start_timestamp' => $span->getStartTimestamp(), 'origin' => $span->getOrigin() ?? 'manual'];
         if ($span->getParentSpanId() !== null) {
             $result['parent_span_id'] = (string) $span->getParentSpanId();
         }
@@ -115,9 +125,6 @@ class TransactionItem implements EnvelopeItemInterface
         }
         if (!empty($span->getTags())) {
             $result['tags'] = $span->getTags();
-        }
-        if (!empty($span->getMetricsSummary())) {
-            $result['metrics_summary'] = $span->getMetricsSummary();
         }
         return $result;
     }

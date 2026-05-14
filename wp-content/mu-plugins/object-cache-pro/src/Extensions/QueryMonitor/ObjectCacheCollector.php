@@ -78,7 +78,7 @@ class ObjectCacheCollector extends QM_Collector
         $this->data['has-dropin'] = $dropinExists;
         $this->data['valid-dropin'] = $dropinIsValid;
 
-        $this->data['license'] = $GLOBALS['ObjectCachePro']->license();
+        $this->data['license'] = $GLOBALS['ObjectCachePro']->license(true);
 
         if (! $dropinIsValid) {
             return;

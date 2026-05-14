@@ -55,12 +55,6 @@ final class FrameContextifierIntegration implements IntegrationInterface
                     $integration->addContextToStacktraceFrames($maxContextLines, $exception->getStacktrace());
                 }
             }
-            foreach ($event->getMetrics() as $metric) {
-                if ($metric->hasCodeLocation()) {
-                    $frame = $metric->getCodeLocation();
-                    $integration->addContextToStacktraceFrame($maxContextLines, $frame);
-                }
-            }
             return $event;
         });
     }
@@ -103,7 +97,7 @@ final class FrameContextifierIntegration implements IntegrationInterface
      *
      * @return array<string, mixed>
      *
-     * @psalm-return array{
+     * @phpstan-return array{
      *     pre_context: string[],
      *     context_line: string|null,
      *     post_context: string[]
@@ -135,7 +129,7 @@ final class FrameContextifierIntegration implements IntegrationInterface
                 $file->next();
             }
         } catch (\Throwable $exception) {
-            $this->logger->warning(sprintf('Failed to get the source code excerpt for the file "%s".', $filePath));
+            $this->logger->warning(\sprintf('Failed to get the source code excerpt for the file "%s".', $filePath), ['exception' => $exception]);
         }
         return $frame;
     }

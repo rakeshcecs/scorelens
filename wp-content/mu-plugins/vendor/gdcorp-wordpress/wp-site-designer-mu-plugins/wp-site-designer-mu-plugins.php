@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WordPress Site Designer MU-Plugins
  * Description: MU-Plugins for WordPress Site Designer integration
- * Version: 2.0.3
+ * Version: 2.2.0
  * Author: GoDaddy
  * Requires PHP: 7.4
  *
@@ -40,15 +40,19 @@ use GoDaddy\WordPress\Plugins\SiteDesigner\Utils\Iframe_Context_Detector;
 use GoDaddy\WordPress\Plugins\SiteDesigner\Woo;
 
 // WP extensions (Mozart-prefixed from gdcorp-wordpress/site-designer-wp-extensions).
-use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Native_UI_Loader;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Bootstrap as WPExtensionsBootstrap;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Draft_Mode;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Editor_Welcome_Guide;
 use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Font_Pairing;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\FullStory_Tracker;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Global_Styles_Sync;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Logo_Settings;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Native_UI_Loader;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\OAuth_Complete;
 use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Palette_Switcher;
+use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Revision_Restore;
 use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Style_Kit;
 use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Theme_Reset;
-use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Global_Styles_Sync;
-use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\OAuth_Complete;
-use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\FullStory_Tracker;
-use GoDaddy\WordPress\Plugins\SiteDesigner\Dependencies\WPExtensions\Editor_Welcome_Guide;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -71,17 +75,21 @@ if ( file_exists( $gdmu_site_designer_vendor_autoloader ) ) {
 	require_once $gdmu_site_designer_vendor_autoloader;
 }
 
-define( 'GDMU_SITE_DESIGNER_VERSION', '2.0.3' );
+define( 'GDMU_SITE_DESIGNER_VERSION', '2.2.0' );
 define( 'GDMU_SITE_DESIGNER_PATH', __DIR__ );
 define( 'GDMU_SITE_DESIGNER_URL', plugins_url( '', __FILE__ ) );
 define( 'GDMU_SITE_DESIGNER_PRESENT_OPTION', 'gdmu_site_designer' );
 
 /**
- * Load plugin textdomain.
+ * Load plugin textdomains and wp-extensions package infrastructure.
  *
- * Loads translations from:
+ * The mu-plugin textdomain (wp-site-designer-mu-plugins) loads from:
  * 1. WP_LANG_DIR/plugins/wp-site-designer-mu-plugins-{locale}.mo (global translations)
  * 2. Plugin's languages directory (bundled translations)
+ *
+ * WPExtensionsBootstrap::init() loads the wp-extensions textdomain from the
+ * Mozart-prefixed location: dependencies/WPExtensions/languages/.
+ * Files are placed there by post-install.php during composer install/update.
  */
 add_action(
 	'muplugins_loaded',
@@ -89,6 +97,10 @@ add_action(
 		// Calculate path relative to WPMU_PLUGIN_DIR.
 		$rel_path = str_replace( trailingslashit( WPMU_PLUGIN_DIR ), '', __DIR__ );
 		load_muplugin_textdomain( 'wp-site-designer-mu-plugins', $rel_path . '/languages' );
+
+		if ( class_exists( WPExtensionsBootstrap::class ) ) {
+			WPExtensionsBootstrap::init();
+		}
 	}
 );
 
@@ -135,10 +147,13 @@ add_action(
 		Native_UI_Loader::init( $gdmu_site_designer_config );
 		Font_Pairing::init();
 		Palette_Switcher::init();
+		Revision_Restore::init();
 		Style_Kit::init();
 		Theme_Reset::init();
 		Global_Styles_Sync::init();
+		Logo_Settings::init();
 		OAuth_Complete::init( $gdmu_site_designer_config );
+		Draft_Mode::init();
 	},
 	20
 );

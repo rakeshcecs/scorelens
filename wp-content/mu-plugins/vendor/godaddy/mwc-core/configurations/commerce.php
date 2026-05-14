@@ -3,10 +3,6 @@
 return [
     'catalog' => [
         'api' => [
-            'url' => [
-                'prod' => defined('MWC_COMMERCE_CATALOG_SERVICE_URL') ? MWC_COMMERCE_CATALOG_SERVICE_URL : 'https://api.mwc.secureserver.net',
-                'dev'  => defined('MWC_COMMERCE_CATALOG_SERVICE_URL') ? MWC_COMMERCE_CATALOG_SERVICE_URL : 'https://api-test.mwc.secureserver.net',
-            ],
             'timeout' => [
                 'prod' => defined('MWC_COMMERCE_CATALOG_SERVICE_TIMEOUT') ? MWC_COMMERCE_CATALOG_SERVICE_TIMEOUT : 20,
                 'dev'  => defined('MWC_COMMERCE_CATALOG_SERVICE_TIMEOUT') ? MWC_COMMERCE_CATALOG_SERVICE_TIMEOUT : 20,

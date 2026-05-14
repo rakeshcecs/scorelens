@@ -260,6 +260,10 @@ class Create_Navigation_Tool extends Base_Tool {
 			);
 		}
 
+		// Create initial revision to match Block Editor behavior. Allows restore to the original content after edits.
+		// wp_save_post_revision() handles all necessary checks internally.
+		wp_save_post_revision( $post_id );
+
 		// Set template if provided
 		if ( ! empty( $input['template'] ) ) {
 			update_post_meta( $post_id, '_wp_page_template', sanitize_text_field( $input['template'] ) );

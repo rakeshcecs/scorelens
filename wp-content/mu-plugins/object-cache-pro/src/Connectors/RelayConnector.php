@@ -241,8 +241,33 @@ class RelayConnector implements ConnectorInterface
             }
         }
 
-        if ($config->cluster_failover) {
+        $supportsClusterTuning = version_compare((string) phpversion('relay'), '0.22.0', '>=');
+
+        if (! $supportsClusterTuning) {
+            foreach (['cluster_distribution_strategy', 'cluster_failover_strategy', 'cluster_az'] as $option) {
+                if (! is_null($config->{$option})) {
+                    throw new LogicException("The `{$option}` configuration option requires Relay v0.22.0 or newer");
+                }
+            }
+        }
+
+        $useNewFailover = $config->cluster_distribution_strategy !== null
+            || $config->cluster_failover_strategy !== null;
+
+        if ($config->cluster_failover && ! $useNewFailover) {
             $client->setOption($client::OPT_SLAVE_FAILOVER, $config->getClusterFailover());
+        }
+
+        if ($config->cluster_distribution_strategy !== null) {
+            $client->setOption($client::OPT_DISTRIBUTE, $config->getClusterDistributionStrategy());
+        }
+
+        if ($config->cluster_failover_strategy !== null) {
+            $client->setOption($client::OPT_FAILOVER, $config->getClusterFailoverStrategy());
+        }
+
+        if ($config->cluster_az !== null) {
+            $client->setOption($client::OPT_AVAILABILITY_ZONE, $config->cluster_az);
         }
 
         return new RelayClusterConnection($client, $config);

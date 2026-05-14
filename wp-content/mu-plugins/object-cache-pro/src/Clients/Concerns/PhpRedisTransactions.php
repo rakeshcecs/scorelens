@@ -18,6 +18,7 @@ namespace RedisCachePro\Clients\Concerns;
 
 use Throwable;
 use LogicException;
+use RuntimeException;
 
 use RedisCachePro\Clients\Transaction;
 
@@ -69,6 +70,10 @@ trait PhpRedisTransactions
         try {
             return $this->{$this->callback}(function () use ($transaction, $method) {
                 $pipe = $this->client->{$method}();
+
+                if (is_bool($pipe)) {
+                    throw new RuntimeException('Failed to initialize pipeline');
+                }
 
                 foreach ($transaction->commands as $command) {
                     $pipe->{$command[0]}(...$command[1]);

@@ -5,9 +5,12 @@ namespace GoDaddy\WordPress\OAuth\Admin;
 use Exception;
 use GoDaddy\WordPress\MWC\Common\Admin\Notices\Notice;
 use GoDaddy\WordPress\MWC\Common\Admin\Notices\Notices;
+use GoDaddy\WordPress\MWC\Common\Components\Contracts\ConditionalComponentContract;
 use GoDaddy\WordPress\MWC\Common\Helpers\TypeHelper;
 use GoDaddy\WordPress\MWC\Common\Register\Register;
+use GoDaddy\WordPress\MWC\Common\Repositories\WordPressRepository;
 use GoDaddy\WordPress\OAuth\Interceptors\DisconnectInterceptor;
+use GoDaddy\WordPress\OAuth\Services\TokenService;
 use GoDaddy\WordPress\OAuth\Storage\Contracts\TokenRepositoryContract;
 
 /**
@@ -16,7 +19,7 @@ use GoDaddy\WordPress\OAuth\Storage\Contracts\TokenRepositoryContract;
  * Provides WordPress admin interface for managing the OAuth connection.
  * Shows connection status and allows users to connect/reconnect.
  */
-class ConnectionPage
+class ConnectionPage implements ConditionalComponentContract
 {
     /**
      * Admin page slug.
@@ -40,17 +43,36 @@ class ConnectionPage
     private TokenRepositoryContract $tokenRepository;
 
     /**
+     * Token service for managing token state.
+     *
+     * @var TokenService
+     */
+    private TokenService $tokenService;
+
+    /**
      * Constructor.
      *
      * @param TokenRepositoryContract $tokenRepository Repository instance
+     * @param TokenService $tokenService Token service instance
      */
-    public function __construct(TokenRepositoryContract $tokenRepository)
+    public function __construct(TokenRepositoryContract $tokenRepository, TokenService $tokenService)
     {
         $this->tokenRepository = $tokenRepository;
+        $this->tokenService = $tokenService;
     }
 
     /** @var string Option key for storing pending notice data */
     public const PENDING_NOTICE_OPTION = 'gd_oauth_pending_notice';
+
+    /**
+     * Determines whether the component should be loaded.
+     *
+     * @return bool
+     */
+    public static function shouldLoad() : bool
+    {
+        return WordPressRepository::isAdmin();
+    }
 
     /**
      * Load the admin page.
@@ -70,6 +92,16 @@ class ConnectionPage
         Register::action()
             ->setGroup('admin_init')
             ->setHandler([$this, 'enqueuePendingNotice'])
+            ->execute();
+
+        Register::action()
+            ->setGroup('admin_init')
+            ->setHandler([$this, 'enqueueExpirationWarning'])
+            ->execute();
+
+        Register::action()
+            ->setGroup('admin_init')
+            ->setHandler([$this, 'enqueueExpiredNotice'])
             ->execute();
     }
 
@@ -97,6 +129,79 @@ class ConnectionPage
                 ->setId(TypeHelper::string($noticeData['id'], ''))
                 ->setType(TypeHelper::string($noticeData['type'] ?? Notice::TYPE_INFO, Notice::TYPE_INFO))
                 ->setContent(TypeHelper::string($noticeData['content'] ?? '', ''))
+                ->setDismissible(false)
+        );
+    }
+
+    /**
+     * Enqueue expiration warning when in degraded state.
+     *
+     * Shows a non-dismissible warning with a link to reconnect when the
+     * refresh token is invalid but the access token is still valid.
+     *
+     * @return void
+     */
+    public function enqueueExpirationWarning() : void
+    {
+        if (! $this->tokenService->isConnectionDegraded()) {
+            return;
+        }
+
+        $token = $this->tokenRepository->get();
+
+        if ($token === null || $token->hasExpired()) {
+            return;
+        }
+
+        $reconnectUrl = $this->getAuthorizationUrl();
+
+        $content = sprintf(
+            /* translators: 1: opening anchor tag, 2: closing anchor tag */
+            __('Your GoDaddy connection will expire soon. %1$sReconnect now%2$s to maintain access.', 'godaddy-oauth-for-wordpress'),
+            '<a href="'.esc_url($reconnectUrl).'">',
+            '</a>'
+        );
+
+        Notices::enqueueAdminNotice(
+            Notice::getNewInstance()
+                ->setId('gd-oauth-expiration-warning')
+                ->setType(Notice::TYPE_WARNING)
+                ->setContent($content)
+                ->setDismissible(false)
+        );
+    }
+
+    /**
+     * Enqueue an error notice when the stored token has expired.
+     *
+     * Fires on every admin page so a user who never visits the Connection
+     * page still sees that their connection is dead and needs reconnection.
+     * Does not depend on the degraded flag - any expired token triggers it.
+     *
+     * @return void
+     */
+    public function enqueueExpiredNotice() : void
+    {
+        $token = $this->tokenRepository->get();
+
+        if ($token === null || ! $token->hasExpired()) {
+            return;
+        }
+
+        $reconnectUrl = $this->getAuthorizationUrl();
+
+        $content = sprintf(
+            /* translators: 1: opening anchor tag, 2: closing anchor tag */
+            __('Your GoDaddy connection has expired. %1$sReconnect%2$s to restore access.', 'godaddy-oauth-for-wordpress'),
+            '<a href="'.esc_url($reconnectUrl).'">',
+            '</a>'
+        );
+
+        Notices::enqueueAdminNotice(
+            Notice::getNewInstance()
+                ->setId('gd-oauth-expired')
+                ->setType(Notice::TYPE_ERROR)
+                ->setContent($content)
                 ->setDismissible(false)
         );
     }
@@ -136,7 +241,10 @@ class ConnectionPage
      */
     public function getConnectionStatus() : ConnectionStatus
     {
-        return new ConnectionStatus($this->tokenRepository->get());
+        return new ConnectionStatus(
+            $this->tokenRepository->get(),
+            $this->tokenService->isConnectionDegraded()
+        );
     }
 
     /**
@@ -309,8 +417,10 @@ class ConnectionPage
         <div class="wrap">
             <h1><?php echo esc_html__('GoDaddy Connection', 'godaddy-oauth-for-wordpress'); ?></h1>
 
-            <?php if ($status->isConnected()) : ?>
+            <?php if ($status->isValid()) : ?>
                 <?php $this->renderConnectedCard(); ?>
+            <?php elseif ($status->isConnected()) : ?>
+                <?php $this->renderExpiredCard(); ?>
             <?php else : ?>
                 <?php $this->renderDisconnectedCard(); ?>
             <?php endif; ?>
@@ -340,6 +450,35 @@ class ConnectionPage
                 <p>
                     <a href="<?php echo esc_url($this->getAuthorizationUrl()); ?>" class="button button-primary">
                         <?php echo esc_html__('Start Authorization', 'godaddy-oauth-for-wordpress'); ?>
+                    </a>
+                </p>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the expired state card.
+     *
+     * @return void
+     */
+    protected function renderExpiredCard() : void
+    {
+        ?>
+        <div class="card gd-oauth-card">
+            <div class="gd-oauth-card-section">
+                <h2><?php echo esc_html__('Connection Expired', 'godaddy-oauth-for-wordpress'); ?></h2>
+                <p>
+                    <?php echo esc_html__(
+                        'Your GoDaddy connection has expired and can no longer refresh automatically. Reconnect to continue syncing your store.',
+                        'godaddy-oauth-for-wordpress'
+                    ); ?>
+                </p>
+            </div>
+            <div class="gd-oauth-card-section">
+                <p>
+                    <a href="<?php echo esc_url($this->getAuthorizationUrl()); ?>" class="button button-primary">
+                        <?php echo esc_html__('Reconnect', 'godaddy-oauth-for-wordpress'); ?>
                     </a>
                 </p>
             </div>

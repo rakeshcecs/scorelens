@@ -9,5 +9,5 @@ use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Event;
  */
 interface EnvelopeItemInterface
 {
-    public static function toEnvelopeItem(Event $event): string;
+    public static function toEnvelopeItem(Event $event): ?string;
 }

@@ -3,6 +3,7 @@
 declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\State;
 
+use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\NullLogger;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Breadcrumb;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\CheckIn;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\CheckInStatus;
@@ -204,41 +205,72 @@ class Hub implements HubInterface
         $transaction = new Transaction($context, $this);
         $client = $this->getClient();
         $options = $client !== null ? $client->getOptions() : null;
+        $logger = $options !== null ? $options->getLoggerOrNullLogger() : new NullLogger();
         if ($options === null || !$options->isTracingEnabled()) {
             $transaction->setSampled(\false);
+            $logger->warning(\sprintf('Transaction [%s] was started but tracing is not enabled.', (string) $transaction->getTraceId()), ['context' => $context]);
             return $transaction;
         }
         $samplingContext = SamplingContext::getDefault($context);
         $samplingContext->setAdditionalContext($customSamplingContext);
-        $tracesSampler = $options->getTracesSampler();
+        $sampleSource = 'context';
+        $sampleRand = $context->getMetadata()->getSampleRand();
         if ($transaction->getSampled() === null) {
+            $tracesSampler = $options->getTracesSampler();
             if ($tracesSampler !== null) {
                 $sampleRate = $tracesSampler($samplingContext);
+                $sampleSource = 'config:traces_sampler';
             } else {
-                $sampleRate = $this->getSampleRate($samplingContext->getParentSampled(), $options->getTracesSampleRate() ?? 0);
+                $parentSampleRate = $context->getMetadata()->getParentSamplingRate();
+                if ($parentSampleRate !== null) {
+                    $sampleRate = $parentSampleRate;
+                    $sampleSource = 'parent:sample_rate';
+                } else {
+                    $sampleRate = $this->getSampleRate($samplingContext->getParentSampled(), $options->getTracesSampleRate() ?? 0);
+                    $sampleSource = $samplingContext->getParentSampled() !== null ? 'parent:sampling_decision' : 'config:traces_sample_rate';
+                }
             }
             if (!$this->isValidSampleRate($sampleRate)) {
                 $transaction->setSampled(\false);
+                $logger->warning(\sprintf('Transaction [%s] was started but not sampled because sample rate (decided by %s) is invalid.', (string) $transaction->getTraceId(), $sampleSource), ['context' => $context]);
                 return $transaction;
             }
             $transaction->getMetadata()->setSamplingRate($sampleRate);
+            // Always overwrite the sample_rate in the DSC
+            $dynamicSamplingContext = $context->getMetadata()->getDynamicSamplingContext();
+            if ($dynamicSamplingContext !== null) {
+                $dynamicSamplingContext->set('sample_rate', (string) $sampleRate, \true);
+            }
             if ($sampleRate === 0.0) {
                 $transaction->setSampled(\false);
+                $logger->info(\sprintf('Transaction [%s] was started but not sampled because sample rate (decided by %s) is %s.', (string) $transaction->getTraceId(), $sampleSource, $sampleRate), ['context' => $context]);
                 return $transaction;
             }
-            $transaction->setSampled($this->sample($sampleRate));
+            $transaction->setSampled($sampleRand < $sampleRate);
         }
         if (!$transaction->getSampled()) {
+            $logger->info(\sprintf('Transaction [%s] was started but not sampled, decided by %s.', (string) $transaction->getTraceId(), $sampleSource), ['context' => $context]);
             return $transaction;
         }
+        $logger->info(\sprintf('Transaction [%s] was started and sampled, decided by %s.', (string) $transaction->getTraceId(), $sampleSource), ['context' => $context]);
         $transaction->initSpanRecorder();
-        $profilesSampleRate = $options->getProfilesSampleRate();
-        if ($this->sample($profilesSampleRate)) {
-            $transaction->initProfiler();
-            $profiler = $transaction->getProfiler();
-            if ($profiler !== null) {
-                $profiler->start();
-            }
+        $profilesSampleSource = 'config:profiles_sample_rate';
+        $profilesSampler = $options->getProfilesSampler();
+        if ($profilesSampler !== null) {
+            $profilesSampleRate = $profilesSampler($samplingContext);
+            $profilesSampleSource = 'config:profiles_sampler';
+        } else {
+            $profilesSampleRate = $options->getProfilesSampleRate();
+        }
+        if ($profilesSampleRate === null) {
+            $logger->info(\sprintf('Transaction [%s] is not profiling because neither `profiles_sample_rate` nor `profiles_sampler` option is set.', (string) $transaction->getTraceId()));
+        } elseif (!$this->isValidSampleRate($profilesSampleRate)) {
+            $logger->warning(\sprintf('Transaction [%s] is not profiling because profile sample rate (decided by %s) is invalid.', (string) $transaction->getTraceId(), $profilesSampleSource));
+        } elseif ($this->sample($profilesSampleRate)) {
+            $logger->info(\sprintf('Transaction [%s] started profiling because it was sampled.', (string) $transaction->getTraceId()));
+            $transaction->initProfiler()->start();
+        } else {
+            $logger->info(\sprintf('Transaction [%s] is not profiling because it was not sampled.', (string) $transaction->getTraceId()));
         }
         return $transaction;
     }
@@ -281,10 +313,10 @@ class Hub implements HubInterface
     private function getSampleRate(?bool $hasParentBeenSampled, float $fallbackSampleRate): float
     {
         if ($hasParentBeenSampled === \true) {
-            return 1;
+            return 1.0;
         }
         if ($hasParentBeenSampled === \false) {
-            return 0;
+            return 0.0;
         }
         return $fallbackSampleRate;
     }
@@ -293,7 +325,7 @@ class Hub implements HubInterface
      */
     private function sample($sampleRate): bool
     {
-        if ($sampleRate === 0.0) {
+        if ($sampleRate === 0.0 || $sampleRate === null) {
             return \false;
         }
         if ($sampleRate === 1.0) {

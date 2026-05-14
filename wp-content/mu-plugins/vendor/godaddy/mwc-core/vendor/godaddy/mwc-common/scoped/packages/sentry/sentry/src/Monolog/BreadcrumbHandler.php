@@ -23,13 +23,13 @@ final class BreadcrumbHandler extends AbstractProcessingHandler
      */
     private $hub;
     /**
-     * @phpstan-param int|string|Level|LogLevel::* $level
-     *
      * @param HubInterface $hub    The hub to which errors are reported
      * @param int|string   $level  The minimum logging level at which this
      *                             handler will be triggered
      * @param bool         $bubble Whether the messages that are handled can
      *                             bubble up the stack or not
+     *
+     * @phpstan-param int|string|Level|LogLevel::* $level
      */
     public function __construct(HubInterface $hub, $level = Logger::DEBUG, bool $bubble = \true)
     {
@@ -37,8 +37,6 @@ final class BreadcrumbHandler extends AbstractProcessingHandler
         parent::__construct($level, $bubble);
     }
     /**
-     * @psalm-suppress MoreSpecificImplementedParamType
-     *
      * @param LogRecord|array{
      *      level: int,
      *      channel: string,
@@ -49,7 +47,9 @@ final class BreadcrumbHandler extends AbstractProcessingHandler
      */
     protected function write($record): void
     {
-        $breadcrumb = new Breadcrumb($this->getBreadcrumbLevel($record['level']), $this->getBreadcrumbType($record['level']), $record['channel'], $record['message'], ($record['context'] ?? []) + ($record['extra'] ?? []), $record['datetime']->getTimestamp());
+        $datetime = $record['datetime'] ?? null;
+        $timestamp = $datetime instanceof \DateTimeInterface ? $datetime->getTimestamp() + (int) $datetime->format('u') / 1000000 : null;
+        $breadcrumb = new Breadcrumb($this->getBreadcrumbLevel($record['level']), $this->getBreadcrumbType($record['level']), $record['channel'], $record['message'], ($record['context'] ?? []) + ($record['extra'] ?? []), $timestamp);
         $this->hub->addBreadcrumb($breadcrumb);
     }
     /**

@@ -4,9 +4,12 @@ declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry;
 
 use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\LoggerInterface;
+use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\NullLogger;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\HttpClient\HttpClientInterface;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Integration\ErrorListenerIntegration;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Integration\IntegrationInterface;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Logs\Log;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\Metric;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Transport\TransportInterface;
 use GoDaddy\WordPress\MWC\Common\Vendor\Symfony\Component\OptionsResolver\Options as SymfonyOptions;
 use GoDaddy\WordPress\MWC\Common\Vendor\Symfony\Component\OptionsResolver\OptionsResolver;
@@ -49,6 +52,11 @@ final class Options
     {
         $this->resolver = new OptionsResolver();
         $this->configureOptions($this->resolver);
+        // Migrate `strict_trace_propagation` over to `strict_trace_continuation` if not set.
+        // If both are set, then `strict_trace_continuation` will take precedence.
+        if (isset($options['strict_trace_propagation']) && !isset($options['strict_trace_continuation'])) {
+            $options['strict_trace_continuation'] = $options['strict_trace_propagation'];
+        }
         $this->options = $this->resolver->resolve($options);
         if ($this->options['enable_tracing'] === \true && $this->options['traces_sample_rate'] === null) {
             $this->options = array_merge($this->options, ['traces_sample_rate' => 1]);
@@ -109,6 +117,8 @@ final class Options
      * precedence.
      *
      * @param bool|null $enableTracing Boolean if tracing should be enabled or not
+     *
+     * @deprecated since version 4.7. To be removed in version 5.0
      */
     public function setEnableTracing(?bool $enableTracing): self
     {
@@ -120,10 +130,92 @@ final class Options
      * Gets if tracing is enabled or not.
      *
      * @return bool|null If the option `enable_tracing` is set or not
+     *
+     * @deprecated since version 4.7. To be removed in version 5.0
      */
     public function getEnableTracing(): ?bool
     {
         return $this->options['enable_tracing'];
+    }
+    /**
+     * Sets if logs should be enabled or not.
+     *
+     * @param bool|null $enableLogs Boolean if logs should be enabled or not
+     */
+    public function setEnableLogs(?bool $enableLogs): self
+    {
+        $options = array_merge($this->options, ['enable_logs' => $enableLogs]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Gets if logs is enabled or not.
+     */
+    public function getEnableLogs(): bool
+    {
+        return $this->options['enable_logs'] ?? \false;
+    }
+    /**
+     * Gets the number of buffered logs that trigger an immediate flush.
+     */
+    public function getLogFlushThreshold(): ?int
+    {
+        /**
+         * @var int|null $logFlushThreshold
+         */
+        $logFlushThreshold = $this->options['log_flush_threshold'];
+        return $logFlushThreshold;
+    }
+    /**
+     * Sets the number of buffered logs that trigger an immediate flush.
+     * null will never trigger an immediate flush.
+     */
+    public function setLogFlushThreshold(?int $logFlushThreshold): self
+    {
+        $options = array_merge($this->options, ['log_flush_threshold' => $logFlushThreshold]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Gets the number of buffered metrics that trigger an immediate flush.
+     */
+    public function getMetricFlushThreshold(): ?int
+    {
+        /**
+         * @var int|null $metricFlushThreshold
+         */
+        $metricFlushThreshold = $this->options['metric_flush_threshold'];
+        return $metricFlushThreshold;
+    }
+    /**
+     * Sets the number of buffered metrics that trigger an immediate flush.
+     * null will never trigger an immediate flush.
+     */
+    public function setMetricFlushThreshold(?int $metricFlushThreshold): self
+    {
+        $options = array_merge($this->options, ['metric_flush_threshold' => $metricFlushThreshold]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Sets if metrics should be enabled or not.
+     */
+    public function setEnableMetrics(bool $enableTracing): self
+    {
+        $options = array_merge($this->options, ['enable_metrics' => $enableTracing]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Returns whether metrics are enabled or not.
+     */
+    public function getEnableMetrics(): bool
+    {
+        /**
+         * @var bool $enableMetrics
+         */
+        $enableMetrics = $this->options['enable_metrics'] ?? \true;
+        return $enableMetrics;
     }
     /**
      * Sets the sampling factor to apply to transactions. A value of 0 will deny
@@ -146,6 +238,31 @@ final class Options
     public function setProfilesSampleRate(?float $sampleRate): self
     {
         $options = array_merge($this->options, ['profiles_sample_rate' => $sampleRate]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Gets a callback that will be invoked when we sample a profile.
+     *
+     * @phpstan-return null|callable(Tracing\SamplingContext): float
+     */
+    public function getProfilesSampler(): ?callable
+    {
+        /** @var callable(Tracing\SamplingContext): float|null $value */
+        $value = $this->options['profiles_sampler'];
+        return $value;
+    }
+    /**
+     * Sets a callback that will be invoked when we take the profiling sampling decision.
+     * Return a number between 0 and 1 to define the sample rate for the provided SamplingContext.
+     *
+     * @param ?callable $sampler The sampler
+     *
+     * @phpstan-param null|callable(Tracing\SamplingContext): float $sampler
+     */
+    public function setProfilesSampler(?callable $sampler): self
+    {
+        $options = array_merge($this->options, ['profiles_sampler' => $sampler]);
         $this->options = $this->resolver->resolve($options);
         return $this;
     }
@@ -181,6 +298,8 @@ final class Options
     }
     /**
      * Gets whether a metric has their code location attached.
+     *
+     * @deprecated Metrics are no longer supported. Metrics API is a no-op and will be removed in 5.x.
      */
     public function shouldAttachMetricCodeLocations(): bool
     {
@@ -188,6 +307,8 @@ final class Options
     }
     /**
      * Sets whether a metric will have their code location attached.
+     *
+     * @deprecated Metrics are no longer supported. Metrics API is a no-op and will be removed in 5.x.
      */
     public function setAttachMetricCodeLocations(bool $enable): self
     {
@@ -279,6 +400,13 @@ final class Options
         return $this->options['logger'];
     }
     /**
+     * Helper to always get a logger instance even if it was not set.
+     */
+    public function getLoggerOrNullLogger(): LoggerInterface
+    {
+        return $this->getLogger() ?? new NullLogger();
+    }
+    /**
      * Sets a PSR-3 compatible logger to log internal debug messages.
      */
     public function setLogger(LoggerInterface $logger): self
@@ -289,9 +417,12 @@ final class Options
     }
     public function isSpotlightEnabled(): bool
     {
-        return $this->options['spotlight'];
+        return \is_string($this->options['spotlight']) || $this->options['spotlight'];
     }
-    public function enableSpotlight(bool $enable): self
+    /**
+     * @param bool|string $enable can be passed a boolean or the Spotlight URL (which will also enable Spotlight)
+     */
+    public function enableSpotlight($enable): self
     {
         $options = array_merge($this->options, ['spotlight' => $enable]);
         $this->options = $this->resolver->resolve($options);
@@ -299,8 +430,16 @@ final class Options
     }
     public function getSpotlightUrl(): string
     {
+        if (\is_string($this->options['spotlight'])) {
+            return $this->options['spotlight'];
+        }
         return $this->options['spotlight_url'];
     }
+    /**
+     * @return $this
+     *
+     * @deprecated since version 4.11. To be removed in 5.x. You may use `enableSpotlight` instead.
+     */
     public function setSpotlightUrl(string $url): self
     {
         $options = array_merge($this->options, ['spotlight_url' => $url]);
@@ -333,6 +472,22 @@ final class Options
         return $this->options['dsn'];
     }
     /**
+     * Gets the Org ID.
+     */
+    public function getOrgId(): ?int
+    {
+        return $this->options['org_id'];
+    }
+    /**
+     * Sets the Org ID.
+     */
+    public function setOrgId(int $orgId): self
+    {
+        $options = array_merge($this->options, ['org_id' => $orgId]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
      * Gets the name of the server the SDK is running on (e.g. the hostname).
      */
     public function getServerName(): string
@@ -355,7 +510,7 @@ final class Options
      *
      * @return string[]
      *
-     * @psalm-return list<class-string<\Throwable>>
+     * @phpstan-return list<class-string<\Throwable>>
      */
     public function getIgnoreExceptions(): array
     {
@@ -396,7 +551,7 @@ final class Options
      * Gets a callback that will be invoked before an event is sent to the server.
      * If `null` is returned it won't be sent.
      *
-     * @psalm-return callable(Event, ?EventHint): ?Event
+     * @phpstan-return callable(Event, ?EventHint): ?Event
      */
     public function getBeforeSendCallback(): callable
     {
@@ -408,7 +563,7 @@ final class Options
      *
      * @param callable $callback The callable
      *
-     * @psalm-param callable(Event, ?EventHint): ?Event $callback
+     * @phpstan-param callable(Event, ?EventHint): ?Event $callback
      */
     public function setBeforeSendCallback(callable $callback): self
     {
@@ -420,7 +575,7 @@ final class Options
      * Gets a callback that will be invoked before an transaction is sent to the server.
      * If `null` is returned it won't be sent.
      *
-     * @psalm-return callable(Event, ?EventHint): ?Event
+     * @phpstan-return callable(Event, ?EventHint): ?Event
      */
     public function getBeforeSendTransactionCallback(): callable
     {
@@ -432,11 +587,111 @@ final class Options
      *
      * @param callable $callback The callable
      *
-     * @psalm-param callable(Event, ?EventHint): ?Event $callback
+     * @phpstan-param callable(Event, ?EventHint): ?Event $callback
      */
     public function setBeforeSendTransactionCallback(callable $callback): self
     {
         $options = array_merge($this->options, ['before_send_transaction' => $callback]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Gets a callback that will be invoked before a check-in is sent to the server.
+     * If `null` is returned it won't be sent.
+     *
+     * @phpstan-return callable(Event, ?EventHint): ?Event
+     */
+    public function getBeforeSendCheckInCallback(): callable
+    {
+        return $this->options['before_send_check_in'];
+    }
+    /**
+     * Sets a callable to be called to decide whether a check-in should
+     * be captured or not.
+     *
+     * @param callable $callback The callable
+     *
+     * @phpstan-param callable(Event, ?EventHint): ?Event $callback
+     */
+    public function setBeforeSendCheckInCallback(callable $callback): self
+    {
+        $options = array_merge($this->options, ['before_send_check_in' => $callback]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Gets a callback that will be invoked before an log is sent to the server.
+     * If `null` is returned it won't be sent.
+     *
+     * @phpstan-return callable(Log): ?Log
+     */
+    public function getBeforeSendLogCallback(): callable
+    {
+        return $this->options['before_send_log'];
+    }
+    /**
+     * Sets a callable to be called to decide whether a log should
+     * be captured or not.
+     *
+     * @param callable $callback The callable
+     *
+     * @phpstan-param callable(Log): ?Log $callback
+     */
+    public function setBeforeSendLogCallback(callable $callback): self
+    {
+        $options = array_merge($this->options, ['before_send_log' => $callback]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Gets a callback that will be invoked before metrics are sent to the server.
+     * If `null` is returned it won't be sent.
+     *
+     * @phpstan-return callable(Event, ?EventHint): ?Event
+     *
+     * @deprecated Metrics are no longer supported. Metrics API is a no-op and will be removed in 5.x.
+     */
+    public function getBeforeSendMetricsCallback(): callable
+    {
+        return $this->options['before_send_metrics'];
+    }
+    /**
+     * Gets a callback that will be invoked before a metric is added.
+     * Returning `null` means that the metric will be discarded.
+     */
+    public function getBeforeSendMetricCallback(): callable
+    {
+        /**
+         * @var callable $callback
+         */
+        $callback = $this->options['before_send_metric'];
+        return $callback;
+    }
+    /**
+     * Sets a new callback that is invoked before metrics are sent.
+     * Returning `null` means that the metric will be discarded.
+     *
+     * @return $this
+     */
+    public function setBeforeSendMetricCallback(callable $callback): self
+    {
+        $options = array_merge($this->options, ['before_send_metric' => $callback]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Sets a callable to be called to decide whether metrics should
+     * be send or not.
+     *
+     * @param callable $callback The callable
+     *
+     * @phpstan-param callable(Event, ?EventHint): ?Event $callback
+     *
+     * @deprecated Metrics are no longer supported. Metrics API is a no-op and will be removed in 5.x.
+     */
+    public function setBeforeSendMetricsCallback(callable $callback): self
+    {
+        $options = array_merge($this->options, ['before_send_metrics' => $callback]);
         $this->options = $this->resolver->resolve($options);
         return $this;
     }
@@ -459,6 +714,44 @@ final class Options
         $options = array_merge($this->options, ['trace_propagation_targets' => $tracePropagationTargets]);
         $this->options = $this->resolver->resolve($options);
         return $this;
+    }
+    /**
+     * Returns whether strict trace continuation is enabled or not.
+     */
+    public function isStrictTraceContinuationEnabled(): bool
+    {
+        /**
+         * @var bool $result
+         */
+        $result = $this->options['strict_trace_continuation'];
+        return $result;
+    }
+    /**
+     * Sets if strict trace continuation should be enabled or not.
+     */
+    public function enableStrictTraceContinuation(bool $strictTraceContinuation): self
+    {
+        $options = array_merge($this->options, ['strict_trace_continuation' => $strictTraceContinuation]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Returns whether strict trace propagation is enabled or not.
+     *
+     * @deprecated since version 4.21. To be removed in version 5.0. Use `isStrictTraceContinuationEnabled` instead.
+     */
+    public function isStrictTracePropagationEnabled(): bool
+    {
+        return $this->isStrictTraceContinuationEnabled();
+    }
+    /**
+     * Sets if strict trace propagation should be enabled or not.
+     *
+     * @deprecated since version 4.21. To be removed in version 5.0. Use `enableStrictTraceContinuation` instead.
+     */
+    public function enableStrictTracePropagation(bool $strictTracePropagation): self
+    {
+        return $this->enableStrictTraceContinuation($strictTracePropagation);
     }
     /**
      * Gets a list of default tags for events.
@@ -519,7 +812,7 @@ final class Options
     /**
      * Gets a callback that will be invoked when adding a breadcrumb.
      *
-     * @psalm-return callable(Breadcrumb): ?Breadcrumb
+     * @phpstan-return callable(Breadcrumb): ?Breadcrumb
      */
     public function getBeforeBreadcrumbCallback(): callable
     {
@@ -534,7 +827,7 @@ final class Options
      *
      * @param callable $callback The callback
      *
-     * @psalm-param callable(Breadcrumb): ?Breadcrumb $callback
+     * @phpstan-param callable(Breadcrumb): ?Breadcrumb $callback
      */
     public function setBeforeBreadcrumbCallback(callable $callback): self
     {
@@ -714,6 +1007,16 @@ final class Options
         $this->options = $this->resolver->resolve($options);
         return $this;
     }
+    public function getHttpSslNativeCa(): bool
+    {
+        return $this->options['http_ssl_native_ca'];
+    }
+    public function setHttpSslNativeCa(bool $httpSslNativeCa): self
+    {
+        $options = array_merge($this->options, ['http_ssl_native_ca' => $httpSslNativeCa]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
     /**
      * Returns whether the requests should be compressed using GZIP or not.
      */
@@ -727,6 +1030,32 @@ final class Options
     public function setEnableHttpCompression(bool $enabled): self
     {
         $options = array_merge($this->options, ['http_compression' => $enabled]);
+        $this->options = $this->resolver->resolve($options);
+        return $this;
+    }
+    /**
+     * Returns whether a shared curl handle should be used or not.
+     *
+     * For PHP 8.5 and above, this will use the persistent curl handle. For previous PHP versions, it will use the
+     * regular share handle.
+     */
+    public function isShareHandleEnabled(): bool
+    {
+        /**
+         * @var bool $shareHandleEnabled
+         */
+        $shareHandleEnabled = $this->options['http_enable_curl_share_handle'];
+        return $shareHandleEnabled;
+    }
+    /**
+     * Sets whether the persistent curl handle should be used or not.
+     *
+     * For PHP 8.5 and above, this will use the persistent curl handle. For previous PHP versions, it will use the
+     * regular share handle.
+     */
+    public function setEnableShareHandle(bool $enabled): self
+    {
+        $options = array_merge($this->options, ['http_enable_curl_share_handle' => $enabled]);
         $this->options = $this->resolver->resolve($options);
         return $this;
     }
@@ -768,7 +1097,7 @@ final class Options
      *                                   captured. It can be set to one of the
      *                                   following values:
      *
-     *                                    - none: request bodies are never sent
+     *                                    - never: request bodies are never sent
      *                                    - small: only small request bodies will
      *                                      be captured where the cutoff for small
      *                                      depends on the SDK (typically 4KB)
@@ -810,7 +1139,7 @@ final class Options
     /**
      * Gets a callback that will be invoked when we sample a Transaction.
      *
-     * @psalm-return null|callable(\Sentry\Tracing\SamplingContext): float
+     * @phpstan-return null|callable(Tracing\SamplingContext): float
      */
     public function getTracesSampler(): ?callable
     {
@@ -822,7 +1151,7 @@ final class Options
      *
      * @param ?callable $sampler The sampler
      *
-     * @psalm-param null|callable(\Sentry\Tracing\SamplingContext): float $sampler
+     * @phpstan-param null|callable(Tracing\SamplingContext): float $sampler
      */
     public function setTracesSampler(?callable $sampler): self
     {
@@ -840,19 +1169,99 @@ final class Options
      */
     private function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['integrations' => [], 'default_integrations' => \true, 'prefixes' => array_filter(explode(\PATH_SEPARATOR, get_include_path() ?: '')), 'sample_rate' => 1, 'enable_tracing' => null, 'traces_sample_rate' => null, 'traces_sampler' => null, 'profiles_sample_rate' => null, 'attach_stacktrace' => \false, 'attach_metric_code_locations' => \false, 'context_lines' => 5, 'environment' => $_SERVER['SENTRY_ENVIRONMENT'] ?? null, 'logger' => null, 'spotlight' => \false, 'spotlight_url' => 'http://localhost:8969', 'release' => $_SERVER['SENTRY_RELEASE'] ?? null, 'dsn' => $_SERVER['SENTRY_DSN'] ?? null, 'server_name' => gethostname(), 'ignore_exceptions' => [], 'ignore_transactions' => [], 'before_send' => static function (Event $event): Event {
-            return $event;
-        }, 'before_send_transaction' => static function (Event $transaction): Event {
-            return $transaction;
-        }, 'trace_propagation_targets' => null, 'tags' => [], 'error_types' => null, 'max_breadcrumbs' => self::DEFAULT_MAX_BREADCRUMBS, 'before_breadcrumb' => static function (Breadcrumb $breadcrumb): Breadcrumb {
-            return $breadcrumb;
-        }, 'in_app_exclude' => [], 'in_app_include' => [], 'send_default_pii' => \false, 'max_value_length' => 1024, 'transport' => null, 'http_client' => null, 'http_proxy' => null, 'http_proxy_authentication' => null, 'http_connect_timeout' => self::DEFAULT_HTTP_CONNECT_TIMEOUT, 'http_timeout' => self::DEFAULT_HTTP_TIMEOUT, 'http_ssl_verify_peer' => \true, 'http_compression' => \true, 'capture_silenced_errors' => \false, 'max_request_body_size' => 'medium', 'class_serializers' => []]);
+        $resolver->setDefaults([
+            'integrations' => [],
+            'default_integrations' => \true,
+            'prefixes' => array_filter(explode(\PATH_SEPARATOR, get_include_path() ?: '')),
+            'sample_rate' => 1,
+            'enable_tracing' => null,
+            'enable_logs' => \false,
+            'log_flush_threshold' => null,
+            'enable_metrics' => \true,
+            'metric_flush_threshold' => null,
+            'traces_sample_rate' => null,
+            'traces_sampler' => null,
+            'profiles_sample_rate' => null,
+            'profiles_sampler' => null,
+            'attach_stacktrace' => \false,
+            /**
+             * @deprecated Metrics are no longer supported. Metrics API is a no-op and will be removed in 5.x.
+             */
+            'attach_metric_code_locations' => \false,
+            'context_lines' => 5,
+            'environment' => $_SERVER['SENTRY_ENVIRONMENT'] ?? null,
+            'logger' => null,
+            'spotlight' => $_SERVER['SENTRY_SPOTLIGHT'] ?? null,
+            /**
+             * @deprecated since version 4.11. To be removed in 5.0. You may use `spotlight` instead.
+             */
+            'spotlight_url' => 'http://localhost:8969',
+            'release' => $_SERVER['SENTRY_RELEASE'] ?? $_SERVER['AWS_LAMBDA_FUNCTION_VERSION'] ?? null,
+            'dsn' => $_SERVER['SENTRY_DSN'] ?? null,
+            'org_id' => null,
+            'server_name' => gethostname(),
+            'ignore_exceptions' => [],
+            'ignore_transactions' => [],
+            'before_send' => static function (Event $event): Event {
+                return $event;
+            },
+            'before_send_transaction' => static function (Event $transaction): Event {
+                return $transaction;
+            },
+            'before_send_check_in' => static function (Event $checkIn): Event {
+                return $checkIn;
+            },
+            'before_send_log' => static function (Log $log): Log {
+                return $log;
+            },
+            /**
+             * @deprecated Metrics are no longer supported. Metrics API is a no-op and will be removed in 5.x.
+             * Use `before_send_metric` instead.
+             */
+            'before_send_metrics' => static function (Event $metrics): ?Event {
+                return null;
+            },
+            'before_send_metric' => static function (Metric $metric): Metric {
+                return $metric;
+            },
+            'trace_propagation_targets' => null,
+            'strict_trace_continuation' => \false,
+            'strict_trace_propagation' => \false,
+            'tags' => [],
+            'error_types' => null,
+            'max_breadcrumbs' => self::DEFAULT_MAX_BREADCRUMBS,
+            'before_breadcrumb' => static function (Breadcrumb $breadcrumb): Breadcrumb {
+                return $breadcrumb;
+            },
+            'in_app_exclude' => [],
+            'in_app_include' => [],
+            'send_default_pii' => \false,
+            'max_value_length' => 1024,
+            'transport' => null,
+            'http_client' => null,
+            'http_proxy' => null,
+            'http_proxy_authentication' => null,
+            'http_connect_timeout' => self::DEFAULT_HTTP_CONNECT_TIMEOUT,
+            'http_timeout' => self::DEFAULT_HTTP_TIMEOUT,
+            'http_ssl_verify_peer' => \true,
+            'http_ssl_native_ca' => \false,
+            'http_compression' => \true,
+            'http_enable_curl_share_handle' => \true,
+            'capture_silenced_errors' => \false,
+            'max_request_body_size' => 'medium',
+            'class_serializers' => [],
+        ]);
         $resolver->setAllowedTypes('prefixes', 'string[]');
         $resolver->setAllowedTypes('sample_rate', ['int', 'float']);
         $resolver->setAllowedTypes('enable_tracing', ['null', 'bool']);
+        $resolver->setAllowedTypes('enable_logs', 'bool');
+        $resolver->setAllowedTypes('log_flush_threshold', ['null', 'int']);
+        $resolver->setAllowedTypes('enable_metrics', 'bool');
+        $resolver->setAllowedTypes('metric_flush_threshold', ['null', 'int']);
         $resolver->setAllowedTypes('traces_sample_rate', ['null', 'int', 'float']);
         $resolver->setAllowedTypes('traces_sampler', ['null', 'callable']);
         $resolver->setAllowedTypes('profiles_sample_rate', ['null', 'int', 'float']);
+        $resolver->setAllowedTypes('profiles_sampler', ['null', 'callable']);
         $resolver->setAllowedTypes('attach_stacktrace', 'bool');
         $resolver->setAllowedTypes('attach_metric_code_locations', 'bool');
         $resolver->setAllowedTypes('context_lines', ['null', 'int']);
@@ -860,16 +1269,21 @@ final class Options
         $resolver->setAllowedTypes('in_app_exclude', 'string[]');
         $resolver->setAllowedTypes('in_app_include', 'string[]');
         $resolver->setAllowedTypes('logger', ['null', LoggerInterface::class]);
-        $resolver->setAllowedTypes('spotlight', 'bool');
+        $resolver->setAllowedTypes('spotlight', ['bool', 'string', 'null']);
         $resolver->setAllowedTypes('spotlight_url', 'string');
         $resolver->setAllowedTypes('release', ['null', 'string']);
         $resolver->setAllowedTypes('dsn', ['null', 'string', 'bool', Dsn::class]);
+        $resolver->setAllowedTypes('org_id', ['null', 'int']);
         $resolver->setAllowedTypes('server_name', 'string');
         $resolver->setAllowedTypes('before_send', ['callable']);
         $resolver->setAllowedTypes('before_send_transaction', ['callable']);
+        $resolver->setAllowedTypes('before_send_log', 'callable');
+        $resolver->setAllowedTypes('before_send_metric', ['callable']);
         $resolver->setAllowedTypes('ignore_exceptions', 'string[]');
         $resolver->setAllowedTypes('ignore_transactions', 'string[]');
         $resolver->setAllowedTypes('trace_propagation_targets', ['null', 'string[]']);
+        $resolver->setAllowedTypes('strict_trace_continuation', 'bool');
+        $resolver->setAllowedTypes('strict_trace_propagation', 'bool');
         $resolver->setAllowedTypes('tags', 'string[]');
         $resolver->setAllowedTypes('error_types', ['null', 'int']);
         $resolver->setAllowedTypes('max_breadcrumbs', 'int');
@@ -885,7 +1299,9 @@ final class Options
         $resolver->setAllowedTypes('http_connect_timeout', ['int', 'float']);
         $resolver->setAllowedTypes('http_timeout', ['int', 'float']);
         $resolver->setAllowedTypes('http_ssl_verify_peer', 'bool');
+        $resolver->setAllowedTypes('http_ssl_native_ca', 'bool');
         $resolver->setAllowedTypes('http_compression', 'bool');
+        $resolver->setAllowedTypes('http_enable_curl_share_handle', 'bool');
         $resolver->setAllowedTypes('capture_silenced_errors', 'bool');
         $resolver->setAllowedTypes('max_request_body_size', 'string');
         $resolver->setAllowedTypes('class_serializers', 'array');
@@ -894,10 +1310,14 @@ final class Options
         $resolver->setAllowedValues('max_breadcrumbs', \Closure::fromCallable([$this, 'validateMaxBreadcrumbsOptions']));
         $resolver->setAllowedValues('class_serializers', \Closure::fromCallable([$this, 'validateClassSerializersOption']));
         $resolver->setAllowedValues('context_lines', \Closure::fromCallable([$this, 'validateContextLinesOption']));
+        $resolver->setAllowedValues('log_flush_threshold', \Closure::fromCallable([$this, 'validateLogFlushThresholdOption']));
+        $resolver->setAllowedValues('metric_flush_threshold', \Closure::fromCallable([$this, 'validateMetricFlushThresholdOption']));
         $resolver->setNormalizer('dsn', \Closure::fromCallable([$this, 'normalizeDsnOption']));
         $resolver->setNormalizer('prefixes', function (SymfonyOptions $options, array $value) {
             return array_map([$this, 'normalizeAbsolutePath'], $value);
         });
+        $resolver->setNormalizer('spotlight_url', \Closure::fromCallable([$this, 'normalizeSpotlightUrl']));
+        $resolver->setNormalizer('spotlight', \Closure::fromCallable([$this, 'normalizeBooleanOrUrl']));
         $resolver->setNormalizer('in_app_exclude', function (SymfonyOptions $options, array $value) {
             return array_map([$this, 'normalizeAbsolutePath'], $value);
         });
@@ -917,6 +1337,29 @@ final class Options
             $path = $value;
         }
         return $path;
+    }
+    /**
+     * @return bool|string
+     */
+    private function normalizeBooleanOrUrl(SymfonyOptions $options, ?string $booleanOrUrl)
+    {
+        if (empty($booleanOrUrl)) {
+            return \false;
+        }
+        if (filter_var($booleanOrUrl, \FILTER_VALIDATE_URL)) {
+            return $this->normalizeSpotlightUrl($options, $booleanOrUrl);
+        }
+        return filter_var($booleanOrUrl, \FILTER_VALIDATE_BOOLEAN);
+    }
+    /**
+     * Normalizes the spotlight URL by removing the `/stream` at the end if present.
+     */
+    private function normalizeSpotlightUrl(SymfonyOptions $options, string $url): string
+    {
+        if (substr_compare($url, '/stream', -7, 7) === 0) {
+            return substr($url, 0, -7);
+        }
+        return $url;
     }
     /**
      * Normalizes the DSN option by parsing the host, public and secret keys and
@@ -977,13 +1420,13 @@ final class Options
         }
     }
     /**
-     * Validates if the value of the max_breadcrumbs option is in range.
+     * Validates if the value of the max_breadcrumbs option is valid.
      *
      * @param int $value The value to validate
      */
     private function validateMaxBreadcrumbsOptions(int $value): bool
     {
-        return $value >= 0 && $value <= self::DEFAULT_MAX_BREADCRUMBS;
+        return $value >= 0;
     }
     /**
      * Validates that the values passed to the `class_serializers` option are valid.
@@ -1007,5 +1450,23 @@ final class Options
     private function validateContextLinesOption(?int $contextLines): bool
     {
         return $contextLines === null || $contextLines >= 0;
+    }
+    /**
+     * Validates that the value passed to the "log_flush_threshold" option is valid.
+     *
+     * @param int|null $logFlushThreshold The value to validate
+     */
+    private function validateLogFlushThresholdOption(?int $logFlushThreshold): bool
+    {
+        return $logFlushThreshold === null || $logFlushThreshold > 0;
+    }
+    /**
+     * Validates that the value passed to the "metric_flush_threshold" option is valid.
+     *
+     * @param int|null $metricFlushThreshold The value to validate
+     */
+    private function validateMetricFlushThresholdOption(?int $metricFlushThreshold): bool
+    {
+        return $metricFlushThreshold === null || $metricFlushThreshold > 0;
     }
 }

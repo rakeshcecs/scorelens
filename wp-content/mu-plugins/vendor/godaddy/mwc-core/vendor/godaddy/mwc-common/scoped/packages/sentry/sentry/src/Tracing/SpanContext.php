@@ -49,6 +49,17 @@ class SpanContext
      * @var float|null Timestamp in seconds (epoch time) indicating when the span ended
      */
     private $endTimestamp;
+    /**
+     * @var string|null the trace origin of the span
+     */
+    private $origin;
+    /**
+     * @return self
+     */
+    public static function make()
+    {
+        return new self();
+    }
     public function getDescription(): ?string
     {
         return $this->description;
@@ -189,6 +200,18 @@ class SpanContext
     public function setEndTimestamp(?float $endTimestamp)
     {
         $this->endTimestamp = $endTimestamp;
+        return $this;
+    }
+    public function getOrigin(): ?string
+    {
+        return $this->origin;
+    }
+    /**
+     * @return $this
+     */
+    public function setOrigin(?string $origin)
+    {
+        $this->origin = $origin;
         return $this;
     }
 }

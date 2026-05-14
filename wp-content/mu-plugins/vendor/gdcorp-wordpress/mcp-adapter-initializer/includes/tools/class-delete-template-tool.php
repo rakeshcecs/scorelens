@@ -178,6 +178,7 @@ class Delete_Template_Tool extends Base_Tool {
 				'source'      => $existing_template->source,
 				'title'       => $existing_template->title,
 				'description' => $existing_template->description,
+				'wp_id'       => isset( $existing_template->wp_id ) ? (int) $existing_template->wp_id : null,
 			);
 
 			// Check if this is a theme-only template (no DB override)

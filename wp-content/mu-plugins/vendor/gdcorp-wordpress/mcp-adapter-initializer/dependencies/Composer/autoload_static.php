@@ -11,14 +11,14 @@ class ComposerStaticInit398c47f41bbb7ee914c0e5ee2d82920f
     );
 
     public static $prefixLengthsPsr4 = array (
-        'G' => 
+        'G' =>
         array (
             'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\Dependencies\\' => 61,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\Dependencies\\' => 
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\Dependencies\\' =>
         array (
             0 => '/app/dependencies',
         ),
@@ -127,6 +127,7 @@ class ComposerStaticInit398c47f41bbb7ee914c0e5ee2d82920f
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Activate_Theme_Tool' => __DIR__ . '/..' . '/../includes/tools/class-activate-theme-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Base_Tool' => __DIR__ . '/..' . '/../includes/tools/class-base-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Create_Navigation_Tool' => __DIR__ . '/..' . '/../includes/tools/class-create-navigation-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Create_Page_Draft_Tool' => __DIR__ . '/..' . '/../includes/tools/class-create-page-draft-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Create_Post_Tool' => __DIR__ . '/..' . '/../includes/tools/class-create-post-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Deactivate_Plugin_Tool' => __DIR__ . '/..' . '/../includes/tools/class-deactivate-plugin-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Media_Tool' => __DIR__ . '/..' . '/../includes/tools/class-delete-media-tool.php',
@@ -135,6 +136,8 @@ class ComposerStaticInit398c47f41bbb7ee914c0e5ee2d82920f
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Post_Tool' => __DIR__ . '/..' . '/../includes/tools/class-delete-post-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Template_Part_Tool' => __DIR__ . '/..' . '/../includes/tools/class-delete-template-part-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Template_Tool' => __DIR__ . '/..' . '/../includes/tools/class-delete-template-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Discard_Page_Draft_Tool' => __DIR__ . '/..' . '/../includes/tools/class-discard-page-draft-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Draft_Page_Helper' => __DIR__ . '/..' . '/../includes/tools/class-draft-page-helper.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Font_Downloader' => __DIR__ . '/..' . '/../includes/tools/class-font-downloader.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_All_Media_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-all-media-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Block_Patterns_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-block-patterns-tool.php',
@@ -142,9 +145,10 @@ class ComposerStaticInit398c47f41bbb7ee914c0e5ee2d82920f
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Global_Styles_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-global-styles-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Media_By_Id_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-media-by-id-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Navigation_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-navigation-tool.php',
-        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Post_By_Option_Name_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-post-by-option-name-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Page_Draft_Status_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-page-draft-status-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Page_Revision_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-page-revision-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Plugin_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-plugin-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Post_By_Option_Name_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-post-by-option-name-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Post_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-post-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Themes_Tool' => __DIR__ . '/..' . '/../includes/tools/class-get-themes-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Global_Styles_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-global-styles-tool.php',
@@ -153,11 +157,13 @@ class ComposerStaticInit398c47f41bbb7ee914c0e5ee2d82920f
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Navigations_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-navigations-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Page_Revisions_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-page-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Plugins_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-plugins-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Post_Revisions_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-post-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Posts_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-posts-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Template_Part_Revisions_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-template-part-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Template_Parts_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-template-parts-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Template_Revisions_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-template-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Templates_Tool' => __DIR__ . '/..' . '/../includes/tools/class-list-templates-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Publish_Page_Draft_Tool' => __DIR__ . '/..' . '/../includes/tools/class-publish-page-draft-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Restore_Post_Revision_Tool' => __DIR__ . '/..' . '/../includes/tools/class-restore-post-revision-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Site_Info_Tool' => __DIR__ . '/..' . '/../includes/tools/class-site-info-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Switch_Theme_Tool' => __DIR__ . '/..' . '/../includes/tools/class-switch-theme-tool.php',

@@ -26,7 +26,7 @@ trait CanBuildProvisioningContextTrait
             'businessId'          => TypeHelper::stringOrNull(ArrayHelper::get($data, 'businessId')),
             'storeId'             => TypeHelper::stringOrNull(ArrayHelper::get($data, 'storeId')),
             'channelId'           => TypeHelper::stringOrNull(ArrayHelper::get($data, 'channelId')),
-            'provisioningStatus'  => TypeHelper::string(ArrayHelper::get($provisioning, 'status'), ''),
+            'provisioningStatus'  => TypeHelper::string(ArrayHelper::get($provisioning, 'status'), 'PENDING'),
             'provisioningMessage' => TypeHelper::stringOrNull(ArrayHelper::get($provisioning, 'message')),
         ]);
     }

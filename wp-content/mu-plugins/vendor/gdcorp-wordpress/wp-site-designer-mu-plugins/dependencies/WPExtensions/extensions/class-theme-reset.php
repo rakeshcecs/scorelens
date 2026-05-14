@@ -120,6 +120,7 @@ class Theme_Reset {
 		delete_option( Font_Pairing::OPTION_KEY );
 		delete_option( Style_Kit::OPTION_KEY );
 		delete_option( Style_Kit::SNAPSHOT_KEY );
+		delete_option( Logo_Settings::OPTION_KEY );
 		// Clear the activated flag so the ?ai-action=generate page is accessible
 		// again and the user can restart the generation flow.
 		delete_option( 'wp_site_designer_activated' );

@@ -18,28 +18,13 @@ final class Expiration_Banner {
 	const FEATURE_FLAG_NAME = 'expiration_banner';
 
 	/**
-	 * Experiment name for the expiration banner.
-	 */
-	const EXPERIMENT_NAME = 'expiration_banner';
-
-	/**
 	 * Whether the banner should be displayed.
 	 *
 	 * @var bool|null
 	 */
 	private $should_show = null;
 
-	/**
-	 * @var Experiment
-	 */
-	private $experiment;
-
-	/**
-	 * @param Experiment $experiment
-	 */
-	public function __construct( Experiment $experiment ) {
-
-		$this->experiment = $experiment;
+	public function __construct() {
 
 		add_action( 'admin_notices', [ $this, 'render_admin_banner' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_tracking_script' ] );
@@ -102,7 +87,6 @@ final class Expiration_Banner {
 	 * 1. User must be an Administrator.
 	 * 2. Feature flag must be enabled.
 	 * 3. Subscription must be expired (SUB_EXPIRATION_DATE in the past).
-	 * 4. Experiment API must return { show: true }.
 	 *
 	 * @return bool
 	 */
@@ -124,10 +108,6 @@ final class Expiration_Banner {
 		}
 
 		if ( ! $this->is_subscription_expired() ) {
-			return false;
-		}
-
-		if ( ! $this->experiment->is_enabled( self::EXPERIMENT_NAME ) ) {
 			return false;
 		}
 

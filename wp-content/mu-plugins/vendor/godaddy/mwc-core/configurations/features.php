@@ -319,10 +319,8 @@ return [
     'worldpay' => [
         'enabled' => true,
 
-        // Note: MWP hosted sites do not currently have a WorldPay FPID,
-        // this will cause the feature to fail to load even though the plan may enable it.
-        // {@see WorldPlay::shouldLoad()}
-        'allowedHostingPlans' => $allMwcsHostingPlans,
+        'allowedHostingPlans' => array_merge($allMwcsHostingPlans, [HostingPlanNamesEnum::Ultimate]),
+        'fpid'                => defined('MWC_FPID') ? MWC_FPID : '4045db9e-1f29-11ed-bad5-fa163e69abfc',
         'hqUrl'               => 'https://poynt.godaddy.com/',
         'baseMenuUrl'         => 'https://commerce.godaddy.com/',
         'useNewUrls'          => true,
@@ -332,7 +330,7 @@ return [
         ],
     ],
     'connected_commerce' => [
-        'enabled'             => false,
+        'enabled'             => true,
         'allowedHostingPlans' => [HostingPlanNamesEnum::Ultimate],
         'requiredPlugins'     => ['woocommerce'],
         'overrides'           => [

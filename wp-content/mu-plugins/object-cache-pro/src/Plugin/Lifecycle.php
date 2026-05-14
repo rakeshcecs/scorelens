@@ -49,8 +49,8 @@ trait Lifecycle
     {
         $this->maybeLogEarlyFlushes();
 
-        if (is_admin()) {
-            $this->killSwitch($this->license());
+        if (is_admin() && ! wp_doing_ajax()) {
+            $this->killSwitch($this->license(true));
         }
     }
 

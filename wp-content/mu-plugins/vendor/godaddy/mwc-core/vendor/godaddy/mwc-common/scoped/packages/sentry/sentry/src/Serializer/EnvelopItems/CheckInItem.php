@@ -24,6 +24,6 @@ class CheckInItem implements EnvelopeItemInterface
                 $payload['contexts']['trace'] = $event->getContexts()['trace'];
             }
         }
-        return sprintf("%s\n%s", JSON::encode($header), JSON::encode($payload));
+        return \sprintf("%s\n%s", JSON::encode($header), JSON::encode($payload));
     }
 }

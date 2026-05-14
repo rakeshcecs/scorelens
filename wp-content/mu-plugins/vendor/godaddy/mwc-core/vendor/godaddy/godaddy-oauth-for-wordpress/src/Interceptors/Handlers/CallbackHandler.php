@@ -5,6 +5,7 @@ namespace GoDaddy\WordPress\OAuth\Interceptors\Handlers;
 use GoDaddy\WordPress\MWC\Common\Admin\Notices\Notice;
 use GoDaddy\WordPress\OAuth\Client\Exceptions\OAuthException;
 use GoDaddy\WordPress\OAuth\Client\OAuthClient;
+use GoDaddy\WordPress\OAuth\Services\TokenService;
 use GoDaddy\WordPress\OAuth\Storage\Contracts\AuthorizationOperationRepositoryContract;
 use GoDaddy\WordPress\OAuth\Storage\Contracts\TokenRepositoryContract;
 
@@ -39,20 +40,30 @@ class CallbackHandler extends AbstractInterceptorHandler
     private AuthorizationOperationRepositoryContract $authorizationOperationRepository;
 
     /**
+     * Token service for managing token state.
+     *
+     * @var TokenService
+     */
+    private TokenService $tokenService;
+
+    /**
      * Construct the handler with dependencies.
      *
      * @param OAuthClient $oauthClient OAuth client instance
      * @param TokenRepositoryContract $tokenRepository Token repository instance
      * @param AuthorizationOperationRepositoryContract $authorizationOperationRepository Authorization operation repository instance
+     * @param TokenService $tokenService Token service instance
      */
     public function __construct(
         OAuthClient $oauthClient,
         TokenRepositoryContract $tokenRepository,
-        AuthorizationOperationRepositoryContract $authorizationOperationRepository
+        AuthorizationOperationRepositoryContract $authorizationOperationRepository,
+        TokenService $tokenService
     ) {
         $this->oauthClient = $oauthClient;
         $this->tokenRepository = $tokenRepository;
         $this->authorizationOperationRepository = $authorizationOperationRepository;
+        $this->tokenService = $tokenService;
     }
 
     /**
@@ -107,6 +118,16 @@ class CallbackHandler extends AbstractInterceptorHandler
 
             // Save token
             $this->tokenRepository->save($token);
+
+            // If no refresh token was issued (e.g., the user authorized without
+            // the offline_access scope), mark the connection as degraded now so
+            // the expiration warning banner surfaces immediately. Otherwise,
+            // clear any previously-set degraded flag from an earlier session.
+            if ($token->getRefreshToken() === '') {
+                $this->tokenService->markConnectionAsDegraded();
+            } else {
+                $this->tokenService->clearConnectionDegraded();
+            }
 
             // Clean up authorization operation
             $this->authorizationOperationRepository->delete();

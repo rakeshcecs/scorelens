@@ -20,6 +20,12 @@ use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\UserDataBag;
 class Scope
 {
     /**
+     * Maximum number of flags allowed. We only track the first flags set.
+     *
+     * @internal
+     */
+    public const MAX_FLAGS = 100;
+    /**
      * @var PropagationContext
      */
     private $propagationContext;
@@ -40,6 +46,10 @@ class Scope
      */
     private $tags = [];
     /**
+     * @var array<int, array<string, bool>> The list of flags associated to this scope
+     */
+    private $flags = [];
+    /**
      * @var array<string, mixed> A set of extra data associated to this scope
      */
     private $extra = [];
@@ -56,7 +66,7 @@ class Scope
     /**
      * @var callable[] List of event processors
      *
-     * @psalm-var array<callable(Event, EventHint): ?Event>
+     * @phpstan-var array<callable(Event, EventHint): ?Event>
      */
     private $eventProcessors = [];
     /**
@@ -66,9 +76,13 @@ class Scope
     /**
      * @var callable[] List of event processors
      *
-     * @psalm-var array<callable(Event, EventHint): ?Event>
+     * @phpstan-var array<callable(Event, EventHint): ?Event>
      */
     private static $globalEventProcessors = [];
+    /**
+     * @var callable|null
+     */
+    private static $externalPropagationContextCallback;
     public function __construct(?PropagationContext $propagationContext = null)
     {
         $this->propagationContext = $propagationContext ?? PropagationContext::fromDefaults();
@@ -108,6 +122,30 @@ class Scope
     public function removeTag(string $key): self
     {
         unset($this->tags[$key]);
+        return $this;
+    }
+    /**
+     * Adds a feature flag to the scope.
+     *
+     * @return $this
+     */
+    public function addFeatureFlag(string $key, bool $result): self
+    {
+        // If the flag was already set, remove it first
+        // This basically mimics an LRU cache so that the most recently added flags are kept
+        foreach ($this->flags as $flagIndex => $flag) {
+            if (isset($flag[$key])) {
+                unset($this->flags[$flagIndex]);
+            }
+        }
+        // Keep only the most recent MAX_FLAGS flags
+        if (\count($this->flags) >= self::MAX_FLAGS) {
+            array_shift($this->flags);
+        }
+        $this->flags[] = [$key => $result];
+        if ($this->span !== null) {
+            $this->span->setFlag($key, $result);
+        }
         return $this;
     }
     /**
@@ -179,7 +217,7 @@ class Scope
     public function setUser($user): self
     {
         if (!\is_array($user) && !$user instanceof UserDataBag) {
-            throw new \TypeError(sprintf('The $user argument must be either an array or an instance of the "%s" class. Got: "%s".', UserDataBag::class, get_debug_type($user)));
+            throw new \TypeError(\sprintf('The $user argument must be either an array or an instance of the "%s" class. Got: "%s".', UserDataBag::class, get_debug_type($user)));
         }
         if (\is_array($user)) {
             $user = UserDataBag::createFromArray($user);
@@ -272,6 +310,41 @@ class Scope
     {
         self::$globalEventProcessors[] = $eventProcessor;
     }
+    public static function registerExternalPropagationContext(callable $callback): void
+    {
+        self::$externalPropagationContextCallback = $callback;
+    }
+    public static function clearExternalPropagationContext(): void
+    {
+        self::$externalPropagationContextCallback = null;
+    }
+    /**
+     * @return array{trace_id: string, span_id: string}|null
+     */
+    public static function getExternalPropagationContext(): ?array
+    {
+        $callback = self::$externalPropagationContextCallback;
+        if (!\is_callable($callback)) {
+            return null;
+        }
+        try {
+            $context = $callback();
+        } catch (\Throwable $exception) {
+            return null;
+        }
+        if (!\is_array($context)) {
+            return null;
+        }
+        $traceId = $context['trace_id'] ?? null;
+        $spanId = $context['span_id'] ?? null;
+        if (!\is_string($traceId) || preg_match('/^[0-9a-f]{32}$/i', $traceId) !== 1) {
+            return null;
+        }
+        if (!\is_string($spanId) || preg_match('/^[0-9a-f]{16}$/i', $spanId) !== 1) {
+            return null;
+        }
+        return ['trace_id' => $traceId, 'span_id' => $spanId];
+    }
     /**
      * Clears the scope and resets any data it contains.
      *
@@ -285,6 +358,7 @@ class Scope
         $this->fingerprint = [];
         $this->breadcrumbs = [];
         $this->tags = [];
+        $this->flags = [];
         $this->extra = [];
         $this->contexts = [];
         return $this;
@@ -307,6 +381,11 @@ class Scope
         if (!empty($this->tags)) {
             $event->setTags(array_merge($this->tags, $event->getTags()));
         }
+        if (!empty($this->flags)) {
+            $event->setContext('flags', ['values' => array_map(static function (array $flag) {
+                return ['flag' => key($flag), 'result' => current($flag)];
+            }, $this->flags)]);
+        }
         if (!empty($this->extra)) {
             $event->setExtra(array_merge($this->extra, $event->getExtra()));
         }
@@ -321,22 +400,25 @@ class Scope
         }
         /**
          * Apply the trace context to errors if there is a Span on the Scope.
-         * Else fallback to the propagation context.
+         * Else fallback to the external propagation context or to the
+         * propagation context.
          * But do not override a trace context already present.
          */
+        $externalPropagationContext = null;
+        if ($this->span === null) {
+            $externalPropagationContext = self::getExternalPropagationContext();
+        }
+        $traceContext = $this->span !== null ? $this->span->getTraceContext() : $externalPropagationContext ?? $this->propagationContext->getTraceContext();
+        if (!\array_key_exists('trace', $event->getContexts())) {
+            $event->setContext('trace', $traceContext);
+        }
         if ($this->span !== null) {
-            if (!\array_key_exists('trace', $event->getContexts())) {
-                $event->setContext('trace', $this->span->getTraceContext());
-            }
             // Apply the dynamic sampling context to errors if there is a Transaction on the Scope
             $transaction = $this->span->getTransaction();
             if ($transaction !== null) {
                 $event->setSdkMetadata('dynamic_sampling_context', $transaction->getDynamicSamplingContext());
             }
-        } else {
-            if (!\array_key_exists('trace', $event->getContexts())) {
-                $event->setContext('trace', $this->propagationContext->getTraceContext());
-            }
+        } elseif ($externalPropagationContext === null) {
             $dynamicSamplingContext = $this->propagationContext->getDynamicSamplingContext();
             if ($dynamicSamplingContext === null && $options !== null) {
                 $dynamicSamplingContext = DynamicSamplingContext::fromOptions($options, $this);
@@ -356,7 +438,7 @@ class Scope
                 return null;
             }
             if (!$event instanceof Event) {
-                throw new \InvalidArgumentException(sprintf('The event processor must return null or an instance of the %s class', Event::class));
+                throw new \InvalidArgumentException(\sprintf('The event processor must return null or an instance of the %s class', Event::class));
             }
         }
         return $event;
@@ -389,6 +471,30 @@ class Scope
             return $this->span->getTransaction();
         }
         return null;
+    }
+    public function hasExternalPropagationContext(): bool
+    {
+        return $this->span === null && self::getExternalPropagationContext() !== null;
+    }
+    /**
+     * @return array{
+     *     trace_id: string,
+     *     span_id: string,
+     *     parent_span_id?: string,
+     *     data?: array<string, mixed>,
+     *     description?: string,
+     *     op?: string,
+     *     status?: string,
+     *     tags?: array<string, string>,
+     *     origin?: string
+     * }
+     */
+    public function getTraceContext(): array
+    {
+        if ($this->span !== null) {
+            return $this->span->getTraceContext();
+        }
+        return self::getExternalPropagationContext() ?? $this->propagationContext->getTraceContext();
     }
     public function getPropagationContext(): PropagationContext
     {

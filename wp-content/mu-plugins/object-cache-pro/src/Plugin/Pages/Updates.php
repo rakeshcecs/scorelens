@@ -55,8 +55,6 @@ class Updates extends Page
     public function boot()
     {
         if (! $this->isCurrent()) {
-            $this->pluginInfo();
-
             return;
         }
 
@@ -168,8 +166,9 @@ class Updates extends Page
     {
         if (! $force) {
             $transient = get_site_transient('objectcache_update');
+            $recentlyChecked = $transient && (time() - ($transient->last_check ?? 0)) < HOUR_IN_SECONDS;
 
-            if ($transient !== false) {
+            if ($recentlyChecked && $transient->version) {
                 return $transient;
             }
         }

@@ -7,8 +7,6 @@ use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Event;
 /**
  * This class contains the details of the sending operation of an event, e.g.
  * if it was sent successfully or if it was skipped because of some reason.
- *
- * @internal
  */
 class Result
 {

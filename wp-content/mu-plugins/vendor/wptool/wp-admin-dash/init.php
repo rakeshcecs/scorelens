@@ -15,7 +15,7 @@
  * Plugin Name:       WPTOOL - WP Admin Dash Plugin
  * Plugin URI:        godaddy.com
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.0.20
+ * Version:           1.0.22
  * Author:            GoDaddy
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
@@ -34,7 +34,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define("WPTOOL_WP_AD_VERSION", "1.0.20");
+define("WPTOOL_WP_AD_VERSION", "1.0.22");
 
 require_once __DIR__ . '/vendor/autoload.php';
 

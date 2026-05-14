@@ -15,7 +15,7 @@ final class CheckIn
      */
     private $monitorSlug;
     /**
-     * @var \Sentry\CheckInStatus The status of the check-in
+     * @var CheckInStatus The status of the check-in
      */
     private $status;
     /**
@@ -31,7 +31,7 @@ final class CheckIn
      */
     private $duration;
     /**
-     * @var \Sentry\MonitorConfig|null The monitor configuration
+     * @var MonitorConfig|null The monitor configuration
      */
     private $monitorConfig;
     /**

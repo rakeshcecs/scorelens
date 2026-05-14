@@ -73,6 +73,19 @@ class Native_UI_Loader {
 	}
 
 	/**
+	 * Whether the current request is rendering a block-editor screen.
+	 *
+	 * @return bool
+	 */
+	private static function is_block_editor_screen(): bool {
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+		$screen = get_current_screen();
+		return $screen && $screen->is_block_editor();
+	}
+
+	/**
 	 * Check if the chat panel was left open by reading the cookie set by JS.
 	 *
 	 * @return bool
@@ -233,10 +246,21 @@ class Native_UI_Loader {
 			wp_enqueue_media();
 		}
 
-		// These dependencies must stay in sync with the @wordpress/* runtime
-		// imports used in packages/native-ui/src/. If you add a new
-		// @wordpress/* runtime import, add the corresponding handle here.
-		$wp_deps = array( 'react-jsx-runtime', 'wp-element' );
+		// Must stay in sync with @wordpress/* runtime imports in packages/native-ui/src/.
+		$wp_deps = array(
+			'react-jsx-runtime',
+			'wp-element',
+			'wp-data',
+			'wp-hooks',
+			'wp-compose',
+		);
+
+		// Editor-only deps for the block-level improver; skip on frontend and non-editor admin pages.
+		if ( self::is_block_editor_screen() ) {
+			$wp_deps[] = 'wp-blocks';
+			$wp_deps[] = 'wp-block-editor';
+			$wp_deps[] = 'wp-components';
+		}
 
 		wp_enqueue_script(
 			'site-designer-native-ui',

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit42eb6d94921d3b31da1b96557049b9dc
+class ComposerStaticInit8339d58c102561e9f55a844521db93f9
 {
     public static $prefixLengthsPsr4 = array (
         'G' => 
@@ -74,13 +74,17 @@ class ComposerStaticInit42eb6d94921d3b31da1b96557049b9dc
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\GoDaddy\\Auth\\S2P' => __DIR__ . '/..' . '/GoDaddy/Auth/S2P.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\GoDaddy\\Auth\\S2S' => __DIR__ . '/..' . '/GoDaddy/Auth/S2S.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\GoDaddy\\Auth\\ShopperInfo' => __DIR__ . '/..' . '/GoDaddy/Auth/ShopperInfo.php',
+        'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Bootstrap' => __DIR__ . '/..' . '/WPExtensions/class-bootstrap.php',
+        'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Draft_Mode' => __DIR__ . '/..' . '/WPExtensions/extensions/class-draft-mode.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Editor_Welcome_Guide' => __DIR__ . '/..' . '/WPExtensions/extensions/class-editor-welcome-guide.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Font_Pairing' => __DIR__ . '/..' . '/WPExtensions/extensions/class-font-pairing.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\FullStory_Tracker' => __DIR__ . '/..' . '/WPExtensions/extensions/class-fullstory-tracker.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Global_Styles_Sync' => __DIR__ . '/..' . '/WPExtensions/extensions/class-global-styles-sync.php',
+        'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Logo_Settings' => __DIR__ . '/..' . '/WPExtensions/extensions/class-logo-settings.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Native_UI_Loader' => __DIR__ . '/..' . '/WPExtensions/extensions/class-native-ui-loader.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\OAuth_Complete' => __DIR__ . '/..' . '/WPExtensions/extensions/class-oauth-complete.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Palette_Switcher' => __DIR__ . '/..' . '/WPExtensions/extensions/class-palette-switcher.php',
+        'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Revision_Restore' => __DIR__ . '/..' . '/WPExtensions/extensions/class-revision-restore.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Style_Kit' => __DIR__ . '/..' . '/WPExtensions/extensions/class-style-kit.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Theme_Reset' => __DIR__ . '/..' . '/WPExtensions/extensions/class-theme-reset.php',
         'GoDaddy\\WordPress\\Plugins\\SiteDesigner\\Dependencies\\WPExtensions\\Utils\\CDN_Version_Override' => __DIR__ . '/..' . '/WPExtensions/utils/class-cdn-version-override.php',
@@ -110,9 +114,9 @@ class ComposerStaticInit42eb6d94921d3b31da1b96557049b9dc
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit42eb6d94921d3b31da1b96557049b9dc::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit42eb6d94921d3b31da1b96557049b9dc::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit42eb6d94921d3b31da1b96557049b9dc::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8339d58c102561e9f55a844521db93f9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8339d58c102561e9f55a844521db93f9::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit8339d58c102561e9f55a844521db93f9::$classMap;
 
         }, null, ClassLoader::class);
     }

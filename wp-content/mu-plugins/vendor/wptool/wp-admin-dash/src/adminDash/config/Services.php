@@ -6,6 +6,7 @@ use Wptool\adminDash\clients\ga\GAClient;
 use Wptool\adminDash\services\AutoUpdateService;
 use Wptool\adminDash\services\CacheService;
 use Wptool\adminDash\services\GDLoginService;
+use Wptool\adminDash\services\GlobalInfoV2Service;
 use Wptool\adminDash\services\MinificationService;
 use Wptool\adminDash\services\OnboardingService;
 use Wptool\adminDash\services\SiteHealthService;
@@ -72,6 +73,10 @@ class Services {
 
 		$services['minification_service'] = function () {
 			return new MinificationService();
+		};
+
+		$services['global_info_v2_service'] = function () {
+			return new GlobalInfoV2Service();
 		};
 
 		return $services;

@@ -2,6 +2,7 @@
 
 namespace GoDaddy\WordPress\MWC\Common\Repositories;
 
+use Closure;
 use Exception;
 use GoDaddy\WordPress\MWC\Common\Configuration\Configuration;
 use GoDaddy\WordPress\MWC\Common\Exceptions\SentryException;
@@ -33,12 +34,12 @@ class SentryRepository
         }
 
         InitializeSentry([
-            'dsn'             => $dsn,
+            'dsn'             => TypeHelper::ensureString($dsn),
             'environment'     => $currentEnv,
             'max_breadcrumbs' => 50, // Amount of trace breadcrumbs -- default is 100
-            'release'         => Configuration::get('mwc.version'), // @TODO: Replace version with commit hash {JO 2021-03-03}
+            'release'         => TypeHelper::stringOrNull(Configuration::get('mwc.version')),
             'sample_rate'     => 1.0, // Keep at 100%. {@see SentrySampleRateRepository} for overrides.
-            'before_send'     => [static::class, 'beforeSend'],
+            'before_send'     => Closure::fromCallable([static::class, 'beforeSend']),
         ]);
 
         // Set scopes

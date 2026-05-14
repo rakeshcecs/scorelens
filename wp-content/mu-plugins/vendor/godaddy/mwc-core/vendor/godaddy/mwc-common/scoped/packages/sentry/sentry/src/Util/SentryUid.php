@@ -19,7 +19,7 @@ final class SentryUid
             return strtolower(str_replace('-', '', uuid_create(\UUID_TYPE_RANDOM)));
         }
         $uuid = bin2hex(random_bytes(16));
-        return sprintf(
+        return \sprintf(
             '%08s%04s4%03s%04x%012s',
             // 32 bits for "time_low"
             substr($uuid, 0, 8),

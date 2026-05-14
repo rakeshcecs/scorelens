@@ -123,7 +123,14 @@ trait Updates
         }
 
         if (! $update) {
-            $update = $this->pluginUpdateRequest();
+            $cached = get_site_transient('objectcache_update');
+            $recentlyChecked = $cached && (time() - ($cached->last_check ?? 0)) < HOUR_IN_SECONDS;
+
+            $payload = $recentlyChecked
+                ? $this->decodeUpdatePayload($cached->payload ?? null)
+                : null;
+
+            $update = $payload ?? $this->pluginUpdateRequest();
         }
 
         if (is_wp_error($update)) {
@@ -210,5 +217,32 @@ trait Updates
         } elseif (version_compare($this->version, $data['Version'], '>')) {
             require __DIR__ . '/templates/outdated.phtml';
         }
+    }
+
+    /**
+     * Decodes the cached update payload from `objectcache_update`.
+     *
+     * @param  ?string  $payload
+     * @return ?object
+     */
+    protected function decodeUpdatePayload($payload)
+    {
+        if ($payload === null) {
+            return null;
+        }
+
+        $decoded = base64_decode($payload, true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $object = json_decode($decoded);
+
+        if (is_object($object) && isset($object->version)) {
+            return $object;
+        }
+
+        return null;
     }
 }

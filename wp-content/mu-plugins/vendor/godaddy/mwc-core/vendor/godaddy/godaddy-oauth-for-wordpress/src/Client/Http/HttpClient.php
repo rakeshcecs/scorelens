@@ -15,6 +15,9 @@ use GoDaddy\WordPress\OAuth\Client\Exceptions\HttpException;
  */
 class HttpClient
 {
+    /** @var int default HTTP timeout in seconds applied to every OAuth API request */
+    public const DEFAULT_TIMEOUT = 15;
+
     /**
      * Make a GET request.
      *
@@ -36,12 +39,43 @@ class HttpClient
     }
 
     /**
+     * Make a POST request.
+     *
+     * Sends a POST request to the specified URL with form-encoded data.
+     * Returns the parsed JSON response as an associative array.
+     *
+     * @param string $url The URL to request
+     * @param array<string, mixed> $data Optional form data
+     * @return array<string, mixed> Parsed JSON response
+     * @throws HttpException If request fails
+     */
+    public function post(string $url, array $data = []) : array
+    {
+        try {
+            // Wrap any request-building exception as an HttpException.
+            $request = $this->createRequest($url)
+                ->setMethod('POST')
+                ->setHeaders([
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ])
+                ->setBody($data);
+        } catch (Exception $exception) {
+            throw new HttpException($exception->getMessage(), $exception, $exception->getCode() ?: 500);
+        }
+
+        return TypeHelper::arrayOfStringsAsKeys($this->send($request)->throw()->getBody());
+    }
+
+    /**
      * @throws HttpException
      */
     protected function createRequest(string $url) : Request
     {
         try {
-            return new Request($url);
+            $request = new Request($url);
+            $request->setTimeout($this->getTimeout());
+
+            return $request;
         } catch (Exception $exception) {
             throw new HttpException($exception->getMessage(), $exception, $exception->getCode() ?: 500);
         }
@@ -60,30 +94,18 @@ class HttpClient
     }
 
     /**
-     * Make a POST request.
+     * Get the HTTP timeout in seconds for OAuth API requests.
      *
-     * Sends a POST request to the specified URL with form-encoded data.
-     * Returns the parsed JSON response as an associative array.
+     * Configurable via the GODADDY_OAUTH_HTTP_TIMEOUT constant.
      *
-     * @param string $url The URL to request
-     * @param array<string, mixed> $data Optional form data
-     * @return array<string, mixed> Parsed JSON response
-     * @throws HttpException If request fails
+     * @return int
      */
-    public function post(string $url, array $data = []) : array
+    protected function getTimeout() : int
     {
-        try {
-            // catch the exception that setHeaders() says it throws even though it never throws when a valid array is given
-            $request = $this->createRequest($url)
-                ->setMethod('POST')
-                ->setHeaders([
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                ])
-                ->setBody($data);
-        } catch (Exception $exception) {
-            throw new HttpException($exception->getMessage(), $exception, $exception->getCode() ?: 500);
+        if (defined('GODADDY_OAUTH_HTTP_TIMEOUT') && is_numeric(GODADDY_OAUTH_HTTP_TIMEOUT)) {
+            return (int) GODADDY_OAUTH_HTTP_TIMEOUT;
         }
 
-        return TypeHelper::arrayOfStringsAsKeys($this->send($request)->throw()->getBody());
+        return self::DEFAULT_TIMEOUT;
     }
 }

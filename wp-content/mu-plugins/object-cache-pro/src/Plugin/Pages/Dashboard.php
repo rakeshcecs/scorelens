@@ -97,9 +97,11 @@ class Dashboard extends Page
     protected function setUpScreenOptions()
     {
         $userOptions = get_user_meta(get_current_user_id(), 'objectcache_screen_options', true);
+        $userOptions = is_array($userOptions) ? $userOptions : [];
+
         $this->refresh = $userOptions['refresh'] ?? true;
 
-        $this->setIntervals($userOptions['interval'] ?? null);
+        $this->setIntervals($userOptions['interval'] ?? 0);
 
         add_filter('screen_options_show_submit', '__return_true');
         add_filter('screen_options_show_screen', '__return_true', PHP_INT_MAX);

@@ -5,11 +5,26 @@ namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Transport;
 
 use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\LoggerInterface;
 use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\NullLogger;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Event;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\EventType;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\HttpClient\Response;
 final class RateLimiter
 {
+    /**
+     * @var string
+     */
+    public const DATA_CATEGORY_PROFILE = 'profile';
+    /**
+     * @var string
+     */
+    private const DATA_CATEGORY_ERROR = 'error';
+    /**
+     * @var string
+     */
+    private const DATA_CATEGORY_LOG_ITEM = 'log_item';
+    /**
+     * @var string
+     */
+    private const DATA_CATEGORY_CHECK_IN = 'monitor';
     /**
      * The name of the header to look at to know the rate limits for the events
      * categories supported by the server.
@@ -23,62 +38,70 @@ final class RateLimiter
     /**
      * The number of seconds after which an HTTP request can be retried.
      */
-    private const DEFAULT_RETRY_AFTER_DELAY_SECONDS = 60;
-    /**
-     * @var LoggerInterface An instance of a PSR-3 compatible logger
-     */
-    private $logger;
+    private const DEFAULT_RETRY_AFTER_SECONDS = 60;
     /**
      * @var array<string, int> The map of time instants for each event category after
      *                         which an HTTP request can be retried
      */
     private $rateLimits = [];
+    /**
+     * @var LoggerInterface A PSR-3 logger
+     */
+    private $logger;
     public function __construct(?LoggerInterface $logger = null)
     {
         $this->logger = $logger ?? new NullLogger();
     }
-    public function handleResponse(Event $event, Response $response): Response
-    {
-        if ($this->handleRateLimit($response)) {
-            $eventType = $event->getType();
-            $disabledUntil = $this->getDisabledUntil($eventType);
-            $this->logger->warning(sprintf('Rate limited exceeded for requests of type "%s", backing off until "%s".', (string) $eventType, gmdate(\DATE_ATOM, $disabledUntil)), ['event' => $event]);
-        }
-        return $response;
-    }
-    public function isRateLimited(EventType $eventType): bool
-    {
-        $disabledUntil = $this->getDisabledUntil($eventType);
-        return $disabledUntil > time();
-    }
-    private function getDisabledUntil(EventType $eventType): int
-    {
-        $category = (string) $eventType;
-        if ($eventType === EventType::event()) {
-            $category = 'error';
-        }
-        return max($this->rateLimits['all'] ?? 0, $this->rateLimits[$category] ?? 0);
-    }
-    private function handleRateLimit(Response $response): bool
+    public function handleResponse(Response $response): bool
     {
         $now = time();
         if ($response->hasHeader(self::RATE_LIMITS_HEADER)) {
             foreach (explode(',', $response->getHeaderLine(self::RATE_LIMITS_HEADER)) as $limit) {
-                $parameters = explode(':', $limit, 3);
-                $parameters = array_splice($parameters, 0, 2);
-                $delay = ctype_digit($parameters[0]) ? (int) $parameters[0] : self::DEFAULT_RETRY_AFTER_DELAY_SECONDS;
+                /**
+                 * $parameters[0] - retry_after
+                 * $parameters[1] - categories
+                 * $parameters[2] - scope (not used)
+                 * $parameters[3] - reason_code (not used)
+                 * $parameters[4] - namespaces (only returned if categories contains "metric_bucket").
+                 */
+                $parameters = explode(':', $limit, 5);
+                $retryAfter = $now + (ctype_digit($parameters[0]) ? (int) $parameters[0] : self::DEFAULT_RETRY_AFTER_SECONDS);
                 foreach (explode(';', $parameters[1]) as $category) {
-                    $this->rateLimits[$category ?: 'all'] = $now + $delay;
+                    $this->rateLimits[$category ?: 'all'] = $retryAfter;
+                    $this->logger->warning(\sprintf('Rate limited exceeded for category "%s", backing off until "%s".', $category, gmdate(\DATE_ATOM, $retryAfter)));
                 }
             }
-            return \true;
+            return $this->rateLimits !== [];
         }
         if ($response->hasHeader(self::RETRY_AFTER_HEADER)) {
-            $delay = $this->parseRetryAfterHeader($now, $response->getHeaderLine(self::RETRY_AFTER_HEADER));
-            $this->rateLimits['all'] = $now + $delay;
+            $retryAfter = $now + $this->parseRetryAfterHeader($now, $response->getHeaderLine(self::RETRY_AFTER_HEADER));
+            $this->rateLimits['all'] = $retryAfter;
+            $this->logger->warning(\sprintf('Rate limited exceeded for all categories, backing off until "%s".', gmdate(\DATE_ATOM, $retryAfter)));
             return \true;
         }
         return \false;
+    }
+    /**
+     * @param string|EventType $eventType
+     */
+    public function isRateLimited($eventType): bool
+    {
+        return $this->getDisabledUntil($eventType) > time();
+    }
+    /**
+     * @param string|EventType $eventType
+     */
+    public function getDisabledUntil($eventType): int
+    {
+        $eventType = $eventType instanceof EventType ? (string) $eventType : $eventType;
+        if ($eventType === 'event') {
+            $eventType = self::DATA_CATEGORY_ERROR;
+        } elseif ($eventType === 'log') {
+            $eventType = self::DATA_CATEGORY_LOG_ITEM;
+        } elseif ($eventType === 'check_in') {
+            $eventType = self::DATA_CATEGORY_CHECK_IN;
+        }
+        return max($this->rateLimits['all'] ?? 0, $this->rateLimits[$eventType] ?? 0);
     }
     private function parseRetryAfterHeader(int $currentTime, string $header): int
     {
@@ -89,6 +112,6 @@ final class RateLimiter
         if ($headerDate !== \false && $headerDate->getTimestamp() >= $currentTime) {
             return $headerDate->getTimestamp() - $currentTime;
         }
-        return self::DEFAULT_RETRY_AFTER_DELAY_SECONDS;
+        return self::DEFAULT_RETRY_AFTER_SECONDS;
     }
 }

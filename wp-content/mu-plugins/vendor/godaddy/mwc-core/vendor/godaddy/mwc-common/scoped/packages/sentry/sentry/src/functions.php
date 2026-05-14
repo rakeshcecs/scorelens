@@ -3,16 +3,74 @@
 declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry;
 
+use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\LoggerInterface;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\HttpClient\HttpClientInterface;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Integration\IntegrationInterface;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Integration\OTLPIntegration;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Logs\Logs;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Metrics;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\TraceMetrics;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\State\Scope;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\PropagationContext;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\SpanContext;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\Transaction;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\TransactionContext;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Transport\TransportInterface;
 /**
  * Creates a new Client and Hub which will be set as current.
  *
- * @param array<string, mixed> $options The client options
+ * @param array{
+ *     attach_metric_code_locations?: bool,
+ *     attach_stacktrace?: bool,
+ *     before_breadcrumb?: callable,
+ *     before_send?: callable,
+ *     before_send_check_in?: callable,
+ *     before_send_log?: callable,
+ *     before_send_transaction?: callable,
+ *     capture_silenced_errors?: bool,
+ *     context_lines?: int|null,
+ *     default_integrations?: bool,
+ *     dsn?: string|bool|Dsn|null,
+ *     enable_logs?: bool,
+ *     environment?: string|null,
+ *     error_types?: int|null,
+ *     http_client?: HttpClientInterface|null,
+ *     http_compression?: bool,
+ *     http_connect_timeout?: int|float,
+ *     http_proxy?: string|null,
+ *     http_proxy_authentication?: string|null,
+ *     http_ssl_verify_peer?: bool,
+ *     http_timeout?: int|float,
+ *     http_enable_curl_share_handle?: bool,
+ *     ignore_exceptions?: array<class-string>,
+ *     ignore_transactions?: array<string>,
+ *     in_app_exclude?: array<string>,
+ *     in_app_include?: array<string>,
+ *     integrations?: IntegrationInterface[]|callable(IntegrationInterface[]): IntegrationInterface[],
+ *     logger?: LoggerInterface|null,
+ *     log_flush_threshold?: int|null,
+ *     metric_flush_threshold?: int|null,
+ *     max_breadcrumbs?: int,
+ *     max_request_body_size?: "none"|"never"|"small"|"medium"|"always",
+ *     max_value_length?: int,
+ *     org_id?: int|null,
+ *     prefixes?: array<string>,
+ *     profiles_sample_rate?: int|float|null,
+ *     profiles_sampler?: callable|null,
+ *     release?: string|null,
+ *     sample_rate?: float|int,
+ *     send_attempts?: int,
+ *     send_default_pii?: bool,
+ *     server_name?: string,
+ *     spotlight?: bool,
+ *     spotlight_url?: string,
+ *     strict_trace_continuation?: bool,
+ *     tags?: array<string>,
+ *     trace_propagation_targets?: array<string>|null,
+ *     traces_sample_rate?: float|int|null,
+ *     traces_sampler?: callable|null,
+ *     transport?: TransportInterface|null,
+ * } $options The client options
  */
 function init(array $options = []): void
 {
@@ -73,6 +131,32 @@ function captureCheckIn(string $slug, CheckInStatus $status, $duration = null, ?
     return SentrySdk::getCurrentHub()->captureCheckIn($slug, $status, $duration, $monitorConfig, $checkInId);
 }
 /**
+ * Execute the given callable while wrapping it in a monitor check-in.
+ *
+ * @param string             $slug          Identifier of the Monitor
+ * @param callable           $callback      The callable that is going to be monitored
+ * @param MonitorConfig|null $monitorConfig Configuration of the Monitor
+ *
+ * @return mixed
+ */
+function withMonitor(string $slug, callable $callback, ?MonitorConfig $monitorConfig = null)
+{
+    $checkInId = SentrySdk::getCurrentHub()->captureCheckIn($slug, CheckInStatus::inProgress(), null, $monitorConfig);
+    $status = CheckInStatus::ok();
+    $duration = 0;
+    try {
+        $start = microtime(\true);
+        $result = $callback();
+        $duration = microtime(\true) - $start;
+        return $result;
+    } catch (\Throwable $e) {
+        $status = CheckInStatus::error();
+        throw $e;
+    } finally {
+        SentrySdk::getCurrentHub()->captureCheckIn($slug, $status, $duration, $monitorConfig, $checkInId);
+    }
+}
+/**
  * Records a new breadcrumb which will be attached to future events. They
  * will be added to subsequent events to provide more context on user's
  * actions prior to an error or crash.
@@ -104,17 +188,45 @@ function configureScope(callable $callback): void
  *
  * @param callable $callback The callback to be executed
  *
+ * @phpstan-template T
+ *
+ * @phpstan-param callable(Scope): T $callback
+ *
  * @return mixed|void The callback's return value, upon successful execution
  *
- * @psalm-template T
- *
- * @psalm-param callable(Scope): T $callback
- *
- * @psalm-return T
+ * @phpstan-return T
  */
 function withScope(callable $callback)
 {
     return SentrySdk::getCurrentHub()->withScope($callback);
+}
+function startContext(): void
+{
+    SentrySdk::startContext();
+}
+function endContext(?int $timeout = null): void
+{
+    SentrySdk::endContext($timeout);
+}
+/**
+ * Executes the given callback within an isolated context.
+ *
+ * If a context is already active for the current execution key, it is reused.
+ *
+ * @param callable $callback The callback to execute
+ * @param int|null $timeout  The maximum number of seconds to wait while flushing the client transport
+ *
+ * @phpstan-template T
+ *
+ * @phpstan-param callable(): T $callback
+ *
+ * @return mixed
+ *
+ * @phpstan-return T
+ */
+function withContext(callable $callback, ?int $timeout = null)
+{
+    return SentrySdk::withContext($callback, $timeout);
 }
 /**
  * Starts a new `Transaction` and returns it. This is the entry point to manual
@@ -132,7 +244,7 @@ function withScope(callable $callback)
  * Sentry.
  *
  * @param TransactionContext   $context               Properties of the new transaction
- * @param array<string, mixed> $customSamplingContext Additional context that will be passed to the {@see \Sentry\Tracing\SamplingContext}
+ * @param array<string, mixed> $customSamplingContext Additional context that will be passed to the {@see Tracing\SamplingContext}
  */
 function startTransaction(TransactionContext $context, array $customSamplingContext = []): Transaction
 {
@@ -140,7 +252,6 @@ function startTransaction(TransactionContext $context, array $customSamplingCont
 }
 /**
  * Execute the given callable while wrapping it in a span added as a child to the current transaction and active span.
- *
  * If there is no transaction active this is a no-op and the scope passed to the trace callable will be unused.
  *
  * @template T
@@ -152,19 +263,20 @@ function startTransaction(TransactionContext $context, array $customSamplingCont
  */
 function trace(callable $trace, SpanContext $context)
 {
-    return SentrySdk::getCurrentHub()->withScope(function (Scope $scope) use ($context, $trace) {
+    return SentrySdk::getCurrentHub()->withScope(static function (Scope $scope) use ($context, $trace) {
         $parentSpan = $scope->getSpan();
-        // If there's a span set on the scope there is a transaction
-        // active currently. If that is the case we create a child span
-        // and set it on the scope. Otherwise we only execute the callable
-        if ($parentSpan !== null) {
+        $span = null;
+        // If there is a span set on the scope and it's sampled there is an active transaction.
+        // If that is the case we create the child span and set it on the scope.
+        // Otherwise we only execute the callable without creating a span.
+        if ($parentSpan !== null && $parentSpan->getSampled()) {
             $span = $parentSpan->startChild($context);
             $scope->setSpan($span);
         }
         try {
             return $trace($scope);
         } finally {
-            if (isset($span)) {
+            if ($span !== null) {
                 $span->finish();
                 $scope->setSpan($parentSpan);
             }
@@ -172,7 +284,27 @@ function trace(callable $trace, SpanContext $context)
     });
 }
 /**
- * Creates the current traceparent string, to be used as a HTTP header value
+ * Returns the OTLP traces endpoint configured for the current client.
+ */
+function getOtlpTracesEndpointUrl(): ?string
+{
+    $hub = SentrySdk::getCurrentHub();
+    $client = $hub->getClient();
+    if ($client === null) {
+        return null;
+    }
+    $integration = $hub->getIntegration(OTLPIntegration::class);
+    if ($integration instanceof OTLPIntegration && $integration->getCollectorUrl() !== null) {
+        return $integration->getCollectorUrl();
+    }
+    $dsn = $client->getOptions()->getDsn();
+    if ($dsn === null) {
+        return null;
+    }
+    return $dsn->getOtlpTracesEndpointUrl();
+}
+/**
+ * Creates the current Sentry traceparent string, to be used as a HTTP header value
  * or HTML meta tag value.
  * This function is context aware, as in it either returns the traceparent based
  * on the current span, or the scope's propagation context.
@@ -183,7 +315,7 @@ function getTraceparent(): string
     $client = $hub->getClient();
     if ($client !== null) {
         $options = $client->getOptions();
-        if ($options !== null && $options->isTracingEnabled()) {
+        if ($options->isTracingEnabled()) {
             $span = SentrySdk::getCurrentHub()->getSpan();
             if ($span !== null) {
                 return $span->toTraceparent();
@@ -191,10 +323,25 @@ function getTraceparent(): string
         }
     }
     $traceParent = '';
-    $hub->configureScope(function (Scope $scope) use (&$traceParent) {
+    $hub->configureScope(static function (Scope $scope) use (&$traceParent) {
+        if ($scope->hasExternalPropagationContext()) {
+            return;
+        }
         $traceParent = $scope->getPropagationContext()->toTraceparent();
     });
     return $traceParent;
+}
+/**
+ * Creates the current W3C traceparent string, to be used as a HTTP header value
+ * or HTML meta tag value.
+ * This function is context aware, as in it either returns the traceparent based
+ * on the current span, or the scope's propagation context.
+ *
+ * @deprecated since version 4.12. To be removed in version 5.0.
+ */
+function getW3CTraceparent(): string
+{
+    return '';
 }
 /**
  * Creates the baggage content string, to be used as a HTTP header value
@@ -208,7 +355,7 @@ function getBaggage(): string
     $client = $hub->getClient();
     if ($client !== null) {
         $options = $client->getOptions();
-        if ($options !== null && $options->isTracingEnabled()) {
+        if ($options->isTracingEnabled()) {
             $span = SentrySdk::getCurrentHub()->getSpan();
             if ($span !== null) {
                 return $span->toBaggage();
@@ -216,7 +363,10 @@ function getBaggage(): string
         }
     }
     $baggage = '';
-    $hub->configureScope(function (Scope $scope) use (&$baggage) {
+    $hub->configureScope(static function (Scope $scope) use (&$baggage) {
+        if ($scope->hasExternalPropagationContext()) {
+            return;
+        }
         $baggage = $scope->getPropagationContext()->toBaggage();
     });
     return $baggage;
@@ -229,14 +379,74 @@ function getBaggage(): string
  */
 function continueTrace(string $sentryTrace, string $baggage): TransactionContext
 {
+    // With the new `strict_trace_continuation`, it's possible that we start two new
+    // traces if we parse the TransactionContext and PropagationContext from the same
+    // headers. To make sure the trace is the same, we will create one transaction
+    // context from headers and copy relevant information over.
+    $transactionContext = TransactionContext::fromHeaders($sentryTrace, $baggage);
+    $propagationContext = PropagationContext::fromDefaults();
+    $metadata = $transactionContext->getMetadata();
+    $traceId = $transactionContext->getTraceId() ?? $propagationContext->getTraceId();
+    $transactionContext->setTraceId($traceId);
+    $propagationContext->setTraceId($traceId);
+    $propagationContext->setParentSpanId($transactionContext->getParentSpanId());
+    $propagationContext->setSampleRand($metadata->getSampleRand());
+    $dynamicSamplingContext = $metadata->getDynamicSamplingContext();
+    if ($dynamicSamplingContext !== null) {
+        $propagationContext->setDynamicSamplingContext($dynamicSamplingContext);
+    }
     $hub = SentrySdk::getCurrentHub();
-    $hub->configureScope(function (Scope $scope) use ($sentryTrace, $baggage) {
-        $propagationContext = PropagationContext::fromHeaders($sentryTrace, $baggage);
+    $hub->configureScope(static function (Scope $scope) use ($propagationContext): void {
         $scope->setPropagationContext($propagationContext);
     });
-    return TransactionContext::fromHeaders($sentryTrace, $baggage);
+    return $transactionContext;
 }
+/**
+ * Get the Sentry Logs client.
+ */
+function logger(): Logs
+{
+    return Logs::getInstance();
+}
+/**
+ * @deprecated use `traceMetrics` instead
+ */
 function metrics(): Metrics
 {
     return Metrics::getInstance();
+}
+function traceMetrics(): TraceMetrics
+{
+    return TraceMetrics::getInstance();
+}
+/**
+ * @deprecated use `traceMetrics` instead
+ */
+function trace_metrics(): TraceMetrics
+{
+    return TraceMetrics::getInstance();
+}
+/**
+ * Adds a feature flag evaluation to the current scope.
+ * When invoked repeatedly for the same name, the most recent value is used.
+ */
+function addFeatureFlag(string $name, bool $result): void
+{
+    SentrySdk::getCurrentHub()->configureScope(static function (Scope $scope) use ($name, $result) {
+        $scope->addFeatureFlag($name, $result);
+    });
+}
+/**
+ * Flushes all buffered telemetry data.
+ *
+ * This is a convenience facade that forwards the flush operation to all
+ * internally managed components.
+ *
+ * Calling this method is equivalent to invoking `flush()` on each component
+ * individually. It does not change flushing behavior, improve performance,
+ * or reduce the number of network requests.
+ */
+function flush(): void
+{
+    SentrySdk::flush();
 }

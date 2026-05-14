@@ -44,21 +44,31 @@ final class IntegrationRegistry
     public function setupIntegrations(Options $options, LoggerInterface $logger): array
     {
         $integrations = [];
+        $installed = [];
         foreach ($this->getIntegrationsToSetup($options) as $integration) {
-            $integrations[\get_class($integration)] = $integration;
-            $this->setupIntegration($integration, $logger);
+            $integrationName = \get_class($integration);
+            $integrations[$integrationName] = $integration;
+            if ($this->setupIntegration($integration, $options)) {
+                $installed[] = $integrationName;
+            }
+        }
+        if (\count($installed) > 0) {
+            $logger->debug(\sprintf('The "%s" integration(s) have been installed.', implode(', ', $installed)));
         }
         return $integrations;
     }
-    private function setupIntegration(IntegrationInterface $integration, LoggerInterface $logger): void
+    private function setupIntegration(IntegrationInterface $integration, Options $options): bool
     {
         $integrationName = \get_class($integration);
         if (isset($this->integrations[$integrationName])) {
-            return;
+            return \false;
+        }
+        if ($integration instanceof OptionAwareIntegrationInterface) {
+            $integration->setOptions($options);
         }
         $integration->setupOnce();
         $this->integrations[$integrationName] = \true;
-        $logger->debug(sprintf('The "%s" integration has been installed.', $integrationName));
+        return \true;
     }
     /**
      * @return IntegrationInterface[]
@@ -88,7 +98,7 @@ final class IntegrationRegistry
         } else {
             $integrations = $userIntegrations($defaultIntegrations);
             if (!\is_array($integrations)) {
-                throw new \UnexpectedValueException(sprintf('Expected the callback set for the "integrations" option to return a list of integrations. Got: "%s".', get_debug_type($integrations)));
+                throw new \UnexpectedValueException(\sprintf('Expected the callback set for the "integrations" option to return a list of integrations. Got: "%s".', get_debug_type($integrations)));
             }
         }
         return $integrations;
@@ -102,7 +112,7 @@ final class IntegrationRegistry
             return [];
         }
         $integrations = [new RequestIntegration(), new TransactionIntegration(), new FrameContextifierIntegration(), new EnvironmentIntegration(), new ModulesIntegration()];
-        if ($options->getDsn() !== null) {
+        if ($options->getDsn() !== null || $options->isSpotlightEnabled()) {
             array_unshift($integrations, new ExceptionListenerIntegration(), new ErrorListenerIntegration(), new FatalErrorListenerIntegration());
         }
         return $integrations;

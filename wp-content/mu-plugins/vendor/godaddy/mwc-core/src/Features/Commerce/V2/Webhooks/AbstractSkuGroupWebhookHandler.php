@@ -119,10 +119,21 @@ abstract class AbstractSkuGroupWebhookHandler extends AbstractWebhookHandler
     {
         $remoteSkuGroupId = $this->parseSkuGroupFromPayload($webhook);
 
-        // query API for full sku group object (as most events only contain partial data, and we want the entire object with all relationships)
+        if ($this->isSkuGroupUpdateLocked($remoteSkuGroupId)) {
+            return;
+        }
+
         $skuGroupRequestOutput = $this->getSkuGroupFromApi($remoteSkuGroupId);
 
         $this->maybeUpdateLocalProduct($remoteSkuGroupId, $skuGroupRequestOutput);
+    }
+
+    /**
+     * Checks whether the given SKU Group is currently being updated from local to remote.
+     */
+    protected function isSkuGroupUpdateLocked(string $remoteSkuGroupId) : bool
+    {
+        return $this->skuGroupService->hasUpdateLock($remoteSkuGroupId);
     }
 
     /**

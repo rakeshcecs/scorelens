@@ -60,10 +60,13 @@ final class Transaction extends Span
      * Sets the name of this transaction.
      *
      * @param string $name The name
+     *
+     * @return $this
      */
-    public function setName(string $name): void
+    public function setName(string $name): self
     {
         $this->name = $name;
+        return $this;
     }
     /**
      * Gets the transaction metadata.
@@ -97,14 +100,14 @@ final class Transaction extends Span
         $this->spanRecorder->add($this);
         return $this;
     }
-    public function initProfiler(): self
+    public function initProfiler(): Profiler
     {
         if ($this->profiler === null) {
             $client = $this->hub->getClient();
             $options = $client !== null ? $client->getOptions() : null;
             $this->profiler = new Profiler($options);
         }
-        return $this;
+        return $this->profiler;
     }
     public function getProfiler(): ?Profiler
     {

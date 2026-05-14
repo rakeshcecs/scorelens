@@ -57,6 +57,12 @@ class RelayCluster extends Client
 
     public const OPT_BACKOFF_CAP = 14;
 
+    public const OPT_DISTRIBUTE = 16;
+
+    public const OPT_FAILOVER = 17;
+
+    public const OPT_AVAILABILITY_ZONE = 110;
+
     public const ATOMIC = 0;
 
     public const MULTI = 1;

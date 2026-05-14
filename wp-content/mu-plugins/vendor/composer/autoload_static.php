@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e
+class ComposerStaticInit3f8daaec89bd4f08db0ca993a8b853f5
 {
     public static $files = array (
         '2d223b650b5c56928c1affa16ee5cfe2' => __DIR__ . '/..' . '/wordpress/abilities-api/includes/bootstrap.php',
@@ -109,6 +109,7 @@ class ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Activate_Theme_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-activate-theme-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Base_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-base-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Create_Navigation_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-create-navigation-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Create_Page_Draft_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-create-page-draft-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Create_Post_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-create-post-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Deactivate_Plugin_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-deactivate-plugin-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Media_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-delete-media-tool.php',
@@ -117,6 +118,8 @@ class ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Post_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-delete-post-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Template_Part_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-delete-template-part-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Delete_Template_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-delete-template-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Discard_Page_Draft_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-discard-page-draft-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Draft_Page_Helper' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-draft-page-helper.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Font_Downloader' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-font-downloader.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_All_Media_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-all-media-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Block_Patterns_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-block-patterns-tool.php',
@@ -124,6 +127,7 @@ class ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Global_Styles_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-global-styles-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Media_By_Id_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-media-by-id-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Navigation_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-navigation-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Page_Draft_Status_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-page-draft-status-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Page_Revision_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-page-revision-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Plugin_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-plugin-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Get_Post_By_Option_Name_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-get-post-by-option-name-tool.php',
@@ -135,11 +139,13 @@ class ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Navigations_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-navigations-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Page_Revisions_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-page-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Plugins_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-plugins-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Post_Revisions_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-post-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Posts_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-posts-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Template_Part_Revisions_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-template-part-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Template_Parts_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-template-parts-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Template_Revisions_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-template-revisions-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\List_Templates_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-list-templates-tool.php',
+        'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Publish_Page_Draft_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-publish-page-draft-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Restore_Post_Revision_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-restore-post-revision-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Site_Info_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-site-info-tool.php',
         'GoDaddy\\WordPress\\Plugins\\MCPAdapterInitializer\\MCP\\Tools\\Switch_Theme_Tool' => __DIR__ . '/..' . '/gdcorp-wordpress/mcp-adapter-initializer/includes/tools/class-switch-theme-tool.php',
@@ -219,9 +225,9 @@ class ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitdb0742bf2642dc4bfe5f6ebce780616e::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit3f8daaec89bd4f08db0ca993a8b853f5::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit3f8daaec89bd4f08db0ca993a8b853f5::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit3f8daaec89bd4f08db0ca993a8b853f5::$classMap;
 
         }, null, ClassLoader::class);
     }

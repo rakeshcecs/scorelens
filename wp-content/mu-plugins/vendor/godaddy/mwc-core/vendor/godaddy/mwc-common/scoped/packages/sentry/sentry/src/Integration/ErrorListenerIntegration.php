@@ -5,20 +5,28 @@ namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Integration;
 
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\ErrorHandler;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Exception\SilencedErrorException;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Options;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\SentrySdk;
 /**
  * This integration hooks into the global error handlers and emits events to
  * Sentry.
  */
-final class ErrorListenerIntegration extends AbstractErrorListenerIntegration
+final class ErrorListenerIntegration extends AbstractErrorListenerIntegration implements OptionAwareIntegrationInterface
 {
+    /**
+     * @var Options
+     */
+    private $options;
+    public function setOptions(Options $options): void
+    {
+        $this->options = $options;
+    }
     /**
      * {@inheritdoc}
      */
     public function setupOnce(): void
     {
-        $errorHandler = ErrorHandler::registerOnceErrorHandler();
-        $errorHandler->addErrorHandlerListener(static function (\ErrorException $exception): void {
+        ErrorHandler::registerOnceErrorHandler($this->options)->addErrorHandlerListener(static function (\ErrorException $exception): void {
             $currentHub = SentrySdk::getCurrentHub();
             $integration = $currentHub->getIntegration(self::class);
             $client = $currentHub->getClient();
@@ -35,5 +43,14 @@ final class ErrorListenerIntegration extends AbstractErrorListenerIntegration
             }
             $integration->captureException($currentHub, $exception);
         });
+    }
+    /**
+     * @internal this is a convenience method to create an instance of this integration for tests
+     */
+    public static function make(Options $options): self
+    {
+        $integration = new self();
+        $integration->setOptions($options);
+        return $integration;
     }
 }

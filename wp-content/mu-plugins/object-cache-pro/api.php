@@ -134,7 +134,9 @@ function wp_cache_init()
         error_log("objectcache.critical: {$error}");
 
         if (! isset($config) || ! ($config instanceof \RedisCachePro\Configuration\Configuration)) {
-            $config = (new \RedisCachePro\Configuration\Configuration)->init();
+            $config = isset($config) && is_array($config)
+                ? \RedisCachePro\Configuration\Configuration::safelyFrom($config)
+                : (new \RedisCachePro\Configuration\Configuration)->init();
         }
 
         if ($config->debug || $config->strict) {

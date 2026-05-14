@@ -190,8 +190,6 @@ trait Dropin
      */
     public function maybeUpdateDropin($upgrader, $options)
     {
-        $this->verifyDropin();
-
         if (! wp_is_file_mod_allowed('object_cache_dropin')) {
             return;
         }
@@ -203,6 +201,8 @@ trait Dropin
         if (! in_array($this->basename, $options['plugins'] ?? [])) {
             return;
         }
+
+        $this->verifyDropin();
 
         $diagnostics = $this->diagnostics();
 

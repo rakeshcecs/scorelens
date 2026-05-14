@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.25.5 - 2026-05-08
+### Added
+- Support WordPress 7.x theme colors
+- Support Relay's `cluster_(az|distribution_strategy|failover_strategy)` options
+
+### Fixed
+- Avoid unnecessary HTTP calls in rare scenarios
+- Fixed admin menu update indicator
+
+## v1.25.4 - 2026-04-22
+### Changed
+- Preserve valid options in fallback when `Configuration::safelyFrom()` fails
+- Improved failure resilience of `wp_cache_get_multiple()`
+- Improved logging of failed transactions
+
+### Fixed
+- Resolved rare deprecation notice
+- Improved rare pipeline initialization failure handling
+- Throw exception in `PhpRedisClusterConnection` when `ping()` or `info()` fail
+
 ## v1.25.3 - 2026-04-08
 ### Fixed
 - Fixed Query Monitor 4.x compatibility

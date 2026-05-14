@@ -13,6 +13,7 @@ use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Providers\DataObject
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Providers\DataObjects\ProductRequestInputs\UpdateSkuGroupInput;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Providers\DataObjects\ProductRequestOutputs\SkuGroupRequestOutput;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Services\Mapping\SkuGroupMappingService;
+use GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Catalog\Services\Traits\HasUpdateLockTrait;
 use GoDaddy\WordPress\MWC\Core\WooCommerce\Models\Products\Product;
 
 /**
@@ -22,6 +23,10 @@ use GoDaddy\WordPress\MWC\Core\WooCommerce\Models\Products\Product;
  */
 class SkuGroupService
 {
+    use HasUpdateLockTrait;
+
+    protected const UPDATE_LOCK_TRANSIENT_PREFIX = 'godaddy_mwc_sku_group_updating_';
+
     /** @var CommerceContextContract */
     protected CommerceContextContract $commerceContext;
 
@@ -101,17 +106,16 @@ class SkuGroupService
      */
     public function update(CreateOrUpdateProductOperationContract $operation, string $skuGroupId) : SkuGroupRequestOutput
     {
-        // Convert WooCommerce product to SKU Group data
         $updateSkuGroupInput = $this->getUpdateInput($operation, $skuGroupId);
 
-        // Update via API provider
+        $this->setUpdateLock($skuGroupId);
+
         $requestOutput = $this->catalogProvider->skuGroups()->update($updateSkuGroupInput);
 
         if (! $requestOutput->skuGroup->id) {
             throw MissingProductRemoteIdException::withDefaultMessage();
         }
 
-        // Handle relationship updates (media, etc.)
         $this->skuGroupRelationshipService->maybeUpdateRelationships($operation, $requestOutput->skuGroup);
 
         return $requestOutput;

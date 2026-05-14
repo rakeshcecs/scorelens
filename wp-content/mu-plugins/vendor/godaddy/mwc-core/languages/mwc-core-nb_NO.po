@@ -8,7 +8,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-10T18:25:30+00:00\n"
+"POT-Creation-Date: 2026-04-27T21:43:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mwc-core\n"
@@ -70,22 +70,26 @@ msgstr "Butikkens visningsnavn."
 msgid "The unique identifier for the store."
 msgstr "Den unike identifikatoren for butikken."
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:94
+#: src/Auth/API/Controllers/OAuth/TokenController.php:60
+msgid "The OAuth token provider is not available."
+msgstr "OAuth-tokenleverandøren er ikke tilgjengelig."
+
+#: src/Auth/API/Controllers/OAuth/TokenController.php:99
 #: src/Auth/API/Controllers/TokenController.php:84
 msgid "The access token string as issued by the authorization server."
 msgstr "Tilgangstoken-strengen som er utstedt av godkjenningsserveren."
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:100
+#: src/Auth/API/Controllers/OAuth/TokenController.php:105
 #: src/Auth/API/Controllers/TokenController.php:90
 msgid "Number of seconds to expiration of the access token."
 msgstr "Antall sekunder til tilgangstokenet utløper."
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:106
+#: src/Auth/API/Controllers/OAuth/TokenController.php:111
 #: src/Auth/API/Controllers/TokenController.php:96
 msgid "The scope the token granted."
 msgstr "Omfanget som tokenet har gitt."
 
-#: src/Auth/API/Controllers/OAuth/TokenController.php:112
+#: src/Auth/API/Controllers/OAuth/TokenController.php:117
 #: src/Auth/API/Controllers/TokenController.php:108
 msgid "The type of token this is."
 msgstr "Typen token dette er."
@@ -379,8 +383,8 @@ msgstr "Informasjon om hentested"
 msgid "Missing or invalid store ID"
 msgstr "Manglende eller ugyldig butikk-ID"
 
-#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:57
-#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:58
+#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:80
+#: src/Features/ConnectedCommerce/Admin/GoDaddyStorePage.php:81
 msgid "GoDaddy Store"
 msgstr "GoDaddy-butikk"
 

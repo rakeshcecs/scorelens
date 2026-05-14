@@ -278,6 +278,49 @@ class Palette_Switcher {
 	);
 
 	/**
+	 * Form field selectors that receive contrast-safe styling.
+	 *
+	 * Excludes interactive input types (submit, button, reset) and
+	 * non-text inputs (checkbox, radio, file, image, hidden).
+	 */
+	private const FORM_FIELD_SELECTORS = array(
+		'input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):not([type="hidden"])',
+		'textarea',
+		'select',
+	);
+
+	/**
+	 * TT5 section background slug → default text slug mapping.
+	 *
+	 * Matches the Twenty Twenty-Five section style variation definitions.
+	 * Used as the starting point; build_section_css() overrides the text
+	 * color at runtime when the resolved palette would produce
+	 * insufficient contrast.
+	 */
+	private const SECTION_DEFINITIONS = array(
+		1 => array(
+			'bg'   => 'accent-5',
+			'text' => 'contrast',
+		),
+		2 => array(
+			'bg'   => 'accent-2',
+			'text' => 'contrast',
+		),
+		3 => array(
+			'bg'   => 'accent-1',
+			'text' => 'contrast',
+		),
+		4 => array(
+			'bg'   => 'accent-3',
+			'text' => 'accent-2',
+		),
+		5 => array(
+			'bg'   => 'contrast',
+			'text' => 'base',
+		),
+	);
+
+	/**
 	 * Initialize and register hooks.
 	 *
 	 * @return void
@@ -286,6 +329,9 @@ class Palette_Switcher {
 		$instance = new self();
 		add_action( 'rest_api_init', array( $instance, 'register_routes' ) );
 		add_filter( 'wp_theme_json_data_user', array( $instance, 'apply_palette' ) );
+		// Priority 99: must run after wp_enqueue_global_styles (priority 10) so our
+		// !important overrides land after the global stylesheet in the <head>.
+		add_action( 'wp_head', array( __CLASS__, 'print_contrast_fallback_css' ), 99 );
 	}
 
 	/**
@@ -401,6 +447,367 @@ class Palette_Switcher {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Print contrast-safe fallback CSS for sections and form fields.
+	 *
+	 * Reads the resolved palette from the active palette source and
+	 * computes contrast-safe text colors. If the default color pairing
+	 * would produce insufficient contrast (< 4.5:1 WCAG AA), the text
+	 * color is flipped to whichever of base/contrast provides better
+	 * contrast against the background.
+	 *
+	 * Sections: fixes invisible section blocks when the AI generator
+	 * emits orphaned has-background classes without actual color values.
+	 *
+	 * Form fields: ensures inputs, textareas, and selects always have
+	 * readable text regardless of the palette (fixes white-on-white).
+	 *
+	 * @return void
+	 */
+	public static function print_contrast_fallback_css(): void {
+		try {
+			$palette_map = self::get_resolved_palette_map();
+		} catch ( \Throwable $e ) {
+			$palette_map = array();
+		}
+
+		$section_css = self::build_section_css( $palette_map );
+		$form_css    = self::build_form_css( $palette_map );
+
+		$css = $section_css . ' ' . $form_css;
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS built from hardcoded slugs, not user input.
+		echo '<style id="wp-site-designer-contrast-fallback">' . $css . '</style>' . "\n";
+	}
+
+	/**
+	 * Build section variation fallback CSS rules.
+	 *
+	 * @param array<string,string> $palette_map Slug → hex map (empty if unavailable).
+	 * @return string CSS rules for sections 1-5.
+	 */
+	private static function build_section_css( array $palette_map ): string {
+		$rules = array();
+
+		foreach ( self::SECTION_DEFINITIONS as $num => $def ) {
+			$bg_slug   = $def['bg'];
+			$text_slug = $def['text'];
+
+			if ( ! empty( $palette_map ) ) {
+				$text_slug = self::pick_contrast_safe_text( $bg_slug, $text_slug, $palette_map );
+			}
+
+			$base = sprintf( '.is-style-section-%d', $num );
+			$root = sprintf(
+				'%1$s,.has-background%1$s,.has-text-color%1$s',
+				$base
+			);
+
+			$color_var = sprintf( 'var(--wp--preset--color--%s)', $text_slug );
+
+			// Root container: set background + text color.
+			$rules[] = sprintf(
+				'%s{background-color:var(--wp--preset--color--%s) !important;color:%s !important;}',
+				$root,
+				$bg_slug,
+				$color_var
+			);
+
+			// Child elements: boost specificity with .wp-site-blocks ancestor so
+			// we beat WP global styles without needing !important, allowing future
+			// style expansions to override these defaults.
+			$rules[] = sprintf(
+				'body .wp-site-blocks %1$s h1,body .wp-site-blocks %1$s h2,body .wp-site-blocks %1$s h3,body .wp-site-blocks %1$s h4,body .wp-site-blocks %1$s h5,body .wp-site-blocks %1$s h6,body .wp-site-blocks %1$s p,body .wp-site-blocks %1$s a:where(:not(.wp-element-button)),body .wp-site-blocks %1$s .wp-element-caption{color:%2$s;}',
+				$base,
+				$color_var
+			);
+		}
+
+		return implode( ' ', $rules );
+	}
+
+	/**
+	 * Build form field fallback CSS rules.
+	 *
+	 * Picks the lightest of base/contrast for the input background so
+	 * fields are always visually distinct, then selects the opposite
+	 * color for text. On light palettes this gives white inputs with
+	 * dark text; on dark palettes it gives light inputs with dark text.
+	 *
+	 * @param array<string,string> $palette_map Slug → hex map (empty if unavailable).
+	 * @return string CSS rules for form fields.
+	 */
+	private static function build_form_css( array $palette_map ): string {
+		$bg_slug   = 'base';
+		$text_slug = 'contrast';
+
+		if ( ! empty( $palette_map ) ) {
+			$base_hex     = $palette_map['base'] ?? null;
+			$contrast_hex = $palette_map['contrast'] ?? null;
+
+			// Use the lighter color as input background so fields stand out
+			// on both light and dark page backgrounds.
+			if ( $base_hex && $contrast_hex ) {
+				$base_lum     = self::relative_luminance( $base_hex );
+				$contrast_lum = self::relative_luminance( $contrast_hex );
+
+				if ( $contrast_lum > $base_lum ) {
+					$bg_slug   = 'contrast';
+					$text_slug = 'base';
+				}
+			}
+
+			$text_slug = self::pick_contrast_safe_text( $bg_slug, $text_slug, $palette_map );
+		}
+
+		$scoped_selectors = array();
+		foreach ( self::FORM_FIELD_SELECTORS as $field ) {
+			$scoped_selectors[] = 'body .wp-site-blocks ' . $field;
+		}
+
+		// Border uses color-mix of the text color at 30% to create a subtle
+		// but always-visible boundary regardless of light/dark palette.
+		// No !important: body + .wp-site-blocks scoping gives high specificity.
+		$field_css = sprintf(
+			'%s{background-color:var(--wp--preset--color--%s);color:var(--wp--preset--color--%s);border:1px solid color-mix(in srgb, var(--wp--preset--color--%s) 30%%, transparent);}',
+			implode( ',', $scoped_selectors ),
+			$bg_slug,
+			$text_slug,
+			$text_slug
+		);
+
+		// Give raw submit buttons the same visual treatment WordPress applies
+		// to .wp-element-button so they look consistent regardless of whether
+		// the AI added the class. TT5 default: accent-2 bg, base text.
+		$btn_bg   = 'accent-2';
+		$btn_text = 'base';
+
+		if ( ! empty( $palette_map ) ) {
+			$btn_text = self::pick_contrast_safe_text( $btn_bg, $btn_text, $palette_map );
+		}
+
+		$btn_selector = '.wp-site-blocks input[type="submit"]:not(.wp-element-button),'
+			. '.wp-site-blocks button[type="submit"]:not(.wp-element-button)';
+		$btn_css      = sprintf(
+			'%s{background-color:var(--wp--preset--color--%s);color:var(--wp--preset--color--%s);'
+			. 'border-width:0;padding:12px 30px;font-family:inherit;'
+			. 'font-size:var(--wp--preset--font-size--medium, 1rem);line-height:inherit;cursor:pointer;}',
+			$btn_selector,
+			$btn_bg,
+			$btn_text
+		);
+
+		return $field_css . ' ' . $btn_css;
+	}
+
+	/**
+	 * Build a slug → hex map from the active palette.
+	 *
+	 * Checks three sources (without triggering the theme.json merge pipeline):
+	 * 1. Our own PALETTES constant when a palette slug is active.
+	 * 2. The wp_global_styles post (user overrides written by the AI generator).
+	 * 3. The active theme's theme.json file on disk.
+	 *
+	 * @return array<string, string> Slug-keyed hex colors, e.g. ['base' => '#FFFFFF'].
+	 */
+	private static function get_resolved_palette_map(): array {
+		$slug = self::get_active_palette();
+		if ( $slug && isset( self::PALETTES[ $slug ] ) ) {
+			return self::build_slug_hex_map( self::build_palette_from_colors( self::PALETTES[ $slug ] ) );
+		}
+
+		$map = self::read_palette_from_global_styles();
+		if ( ! empty( $map ) ) {
+			return $map;
+		}
+
+		return self::read_palette_from_theme_json();
+	}
+
+	/**
+	 * Read palette colors from the wp_global_styles post.
+	 *
+	 * @return array<string, string> Slug-keyed hex colors.
+	 */
+	private static function read_palette_from_global_styles(): array {
+		if ( ! function_exists( 'get_stylesheet' ) || ! class_exists( '\WP_Query' ) ) {
+			return array();
+		}
+
+		$args = array(
+			'post_type'               => 'wp_global_styles',
+			'post_status'             => array( 'publish', 'draft' ),
+			'posts_per_page'          => 1,
+			'no_found_rows'           => true,
+			'update_post_meta_caches' => false,
+			'update_post_term_caches' => false,
+			'tax_query'               => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- required to find the correct wp_global_styles post.
+				array(
+					'taxonomy' => 'wp_theme',
+					'field'    => 'name',
+					'terms'    => get_stylesheet(),
+				),
+			),
+		);
+
+		$query = new \WP_Query( $args );
+		if ( ! $query->have_posts() ) {
+			return array();
+		}
+
+		$content = json_decode( $query->posts[0]->post_content, true );
+		if ( ! is_array( $content ) ) {
+			return array();
+		}
+
+		return self::extract_palette_from_settings( $content['settings'] ?? array() );
+	}
+
+	/**
+	 * Read palette colors from the active theme's theme.json file.
+	 *
+	 * @return array<string, string> Slug-keyed hex colors.
+	 */
+	private static function read_palette_from_theme_json(): array {
+		if ( ! function_exists( 'get_stylesheet_directory' ) ) {
+			return array();
+		}
+
+		$path = get_stylesheet_directory() . '/theme.json';
+		if ( ! is_readable( $path ) ) {
+			return array();
+		}
+
+		$content = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading local theme.json file, not a remote URL.
+		if ( ! is_array( $content ) ) {
+			return array();
+		}
+
+		return self::extract_palette_from_settings( $content['settings'] ?? array() );
+	}
+
+	/**
+	 * Extract palette entries from a theme.json settings array.
+	 *
+	 * Handles both flat arrays and origin-keyed structures
+	 * (custom > theme > default).
+	 *
+	 * @param array $settings The settings portion of theme.json data.
+	 * @return array<string, string> Slug-keyed hex colors.
+	 */
+	private static function extract_palette_from_settings( array $settings ): array {
+		$palette_data = $settings['color']['palette'] ?? array();
+
+		if ( isset( $palette_data['custom'] ) && is_array( $palette_data['custom'] ) ) {
+			return self::build_slug_hex_map( $palette_data['custom'] );
+		}
+
+		if ( isset( $palette_data['theme'] ) && is_array( $palette_data['theme'] ) ) {
+			return self::build_slug_hex_map( $palette_data['theme'] );
+		}
+
+		if ( is_array( $palette_data ) && ! empty( $palette_data ) ) {
+			return self::build_slug_hex_map( $palette_data );
+		}
+
+		return array();
+	}
+
+	/**
+	 * Convert a palette array to a slug → hex map.
+	 *
+	 * @param array $palette Array of palette entries with slug and color keys.
+	 * @return array<string, string> Slug-keyed hex colors.
+	 */
+	private static function build_slug_hex_map( array $palette ): array {
+		$map = array();
+		foreach ( $palette as $entry ) {
+			if ( isset( $entry['slug'], $entry['color'] ) && is_string( $entry['color'] ) && 0 === strpos( $entry['color'], '#' ) ) {
+				$map[ $entry['slug'] ] = $entry['color'];
+			}
+		}
+		return $map;
+	}
+
+	/**
+	 * Pick the text color slug that guarantees WCAG AA contrast (4.5:1).
+	 *
+	 * If the default text slug already provides sufficient contrast against
+	 * the background, it is returned unchanged. Otherwise, whichever of
+	 * 'base' or 'contrast' provides better contrast is returned.
+	 *
+	 * @param string               $bg_slug      Background color slug.
+	 * @param string               $text_slug    Default text color slug from TT5.
+	 * @param array<string,string> $palette_map  Slug → hex map.
+	 * @return string The slug to use for text color.
+	 */
+	private static function pick_contrast_safe_text( string $bg_slug, string $text_slug, array $palette_map ): string {
+		$bg_hex   = $palette_map[ $bg_slug ] ?? null;
+		$text_hex = $palette_map[ $text_slug ] ?? null;
+
+		if ( ! $bg_hex ) {
+			return $text_slug;
+		}
+
+		if ( $text_hex && self::contrast_ratio( $bg_hex, $text_hex ) >= 4.5 ) {
+			return $text_slug;
+		}
+
+		$base_hex     = $palette_map['base'] ?? null;
+		$contrast_hex = $palette_map['contrast'] ?? null;
+
+		$base_ratio     = $base_hex ? self::contrast_ratio( $bg_hex, $base_hex ) : 0;
+		$contrast_ratio = $contrast_hex ? self::contrast_ratio( $bg_hex, $contrast_hex ) : 0;
+
+		if ( $base_ratio >= $contrast_ratio && $base_ratio >= 4.5 ) {
+			return 'base';
+		}
+		if ( $contrast_ratio >= 4.5 ) {
+			return 'contrast';
+		}
+
+		return $base_ratio >= $contrast_ratio ? 'base' : 'contrast';
+	}
+
+	/**
+	 * Calculate the WCAG 2.1 contrast ratio between two hex colors.
+	 *
+	 * @param string $hex1 First hex color.
+	 * @param string $hex2 Second hex color.
+	 * @return float Contrast ratio (1.0 to 21.0).
+	 */
+	private static function contrast_ratio( string $hex1, string $hex2 ): float {
+		$l1 = self::relative_luminance( $hex1 );
+		$l2 = self::relative_luminance( $hex2 );
+
+		$lighter = max( $l1, $l2 );
+		$darker  = min( $l1, $l2 );
+
+		return ( $lighter + 0.05 ) / ( $darker + 0.05 );
+	}
+
+	/**
+	 * Calculate relative luminance per WCAG 2.1.
+	 *
+	 * @param string $hex Hex color (3 or 6 digits, with or without #).
+	 * @return float Relative luminance (0.0 to 1.0).
+	 */
+	private static function relative_luminance( string $hex ): float {
+		$hex = ltrim( $hex, '#' );
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+
+		$r = hexdec( substr( $hex, 0, 2 ) ) / 255;
+		$g = hexdec( substr( $hex, 2, 2 ) ) / 255;
+		$b = hexdec( substr( $hex, 4, 2 ) ) / 255;
+
+		$r = $r <= 0.04045 ? $r / 12.92 : pow( ( $r + 0.055 ) / 1.055, 2.4 );
+		$g = $g <= 0.04045 ? $g / 12.92 : pow( ( $g + 0.055 ) / 1.055, 2.4 );
+		$b = $b <= 0.04045 ? $b / 12.92 : pow( ( $b + 0.055 ) / 1.055, 2.4 );
+
+		return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
 	}
 
 	/**

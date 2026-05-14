@@ -2,11 +2,12 @@
 
 namespace GoDaddy\WordPress\MWC\Core\Auth\API\Controllers\OAuth;
 
-use Exception;
 use GoDaddy\WordPress\MWC\Common\API\Controllers\AbstractController;
 use GoDaddy\WordPress\MWC\Common\Components\Contracts\ComponentContract;
+use GoDaddy\WordPress\MWC\Common\Container\ContainerFactory;
 use GoDaddy\WordPress\MWC\Core\Auth\Providers\GoDaddy\Contracts\ThreeLeggedOAuthTokenProviderContract;
 use GoDaddy\WordPress\MWC\Core\Features\ConnectedCommerce\Admin\GoDaddyStorePage;
+use Throwable;
 use WP_Error;
 use WP_REST_Response;
 
@@ -15,18 +16,11 @@ use WP_REST_Response;
  */
 class TokenController extends AbstractController implements ComponentContract
 {
+    /** @var string REST error code returned when the OAuth token provider cannot be resolved. */
+    public const ERROR_CODE_OAUTH_UNAVAILABLE = 'mwc_core_oauth_provider_unavailable';
+
     /** @var string */
     protected $route = 'oauth/token';
-
-    protected ThreeLeggedOAuthTokenProviderContract $authProvider;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ThreeLeggedOAuthTokenProviderContract $authProvider)
-    {
-        $this->authProvider = $authProvider;
-    }
 
     /**
      * Initializes the controller.
@@ -58,10 +52,21 @@ class TokenController extends AbstractController implements ComponentContract
     public function createItem()
     {
         try {
-            $response = $this->authProvider->getCredentials()->toArray();
-        } catch (Exception $exception) {
-            $response = new WP_Error($exception->getCode() ?: 500, $exception->getMessage(), [
-                'status' => $exception->getCode() ?: 500,
+            /** @var ThreeLeggedOAuthTokenProviderContract $authProvider */
+            $authProvider = ContainerFactory::getInstance()->getSharedContainer()->get(ThreeLeggedOAuthTokenProviderContract::class);
+        } catch (Throwable $throwable) {
+            return rest_ensure_response(new WP_Error(
+                self::ERROR_CODE_OAUTH_UNAVAILABLE,
+                __('The OAuth token provider is not available.', 'mwc-core'),
+                ['status' => 500]
+            ));
+        }
+
+        try {
+            $response = $authProvider->getCredentials()->toArray();
+        } catch (Throwable $throwable) {
+            $response = new WP_Error($throwable->getCode() ?: 500, $throwable->getMessage(), [
+                'status' => $throwable->getCode() ?: 500,
             ]);
         }
 

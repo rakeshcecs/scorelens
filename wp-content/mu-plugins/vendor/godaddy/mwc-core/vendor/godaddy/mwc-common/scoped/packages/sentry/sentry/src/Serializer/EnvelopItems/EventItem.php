@@ -8,6 +8,7 @@ use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\ExceptionDataBag;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Serializer\Traits\BreadcrumbSeralizerTrait;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Serializer\Traits\StacktraceFrameSeralizerTrait;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Util\JSON;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Util\Str;
 /**
  * @internal
  */
@@ -18,7 +19,7 @@ class EventItem implements EnvelopeItemInterface
     public static function toEnvelopeItem(Event $event): string
     {
         $header = ['type' => (string) $event->getType(), 'content_type' => 'application/json'];
-        $payload = ['timestamp' => $event->getTimestamp(), 'platform' => 'php', 'sdk' => ['name' => $event->getSdkIdentifier(), 'version' => $event->getSdkVersion()]];
+        $payload = ['timestamp' => $event->getTimestamp(), 'platform' => 'php', 'sdk' => $event->getSdkPayload()];
         if ($event->getStartTimestamp() !== null) {
             $payload['start_timestamp'] = $event->getStartTimestamp();
         }
@@ -62,7 +63,7 @@ class EventItem implements EnvelopeItemInterface
         }
         $runtimeContext = $event->getRuntimeContext();
         if ($runtimeContext !== null) {
-            $payload['contexts']['runtime'] = ['name' => $runtimeContext->getName(), 'version' => $runtimeContext->getVersion()];
+            $payload['contexts']['runtime'] = ['name' => $runtimeContext->getName(), 'sapi' => $runtimeContext->getSAPI(), 'version' => $runtimeContext->getVersion()];
         }
         if (!empty($event->getContexts())) {
             $payload['contexts'] = array_merge($payload['contexts'] ?? [], $event->getContexts());
@@ -77,7 +78,7 @@ class EventItem implements EnvelopeItemInterface
             if (empty($event->getMessageParams())) {
                 $payload['message'] = $event->getMessage();
             } else {
-                $payload['message'] = ['message' => $event->getMessage(), 'params' => $event->getMessageParams(), 'formatted' => $event->getMessageFormatted() ?? vsprintf($event->getMessage(), $event->getMessageParams())];
+                $payload['message'] = ['message' => $event->getMessage(), 'params' => $event->getMessageParams(), 'formatted' => $event->getMessageFormatted() ?? Str::vsprintfOrNull($event->getMessage(), $event->getMessageParams()) ?? $event->getMessage()];
             }
         }
         $exceptions = $event->getExceptions();
@@ -88,12 +89,12 @@ class EventItem implements EnvelopeItemInterface
         if ($stacktrace !== null) {
             $payload['stacktrace'] = ['frames' => array_map([self::class, 'serializeStacktraceFrame'], $stacktrace->getFrames())];
         }
-        return sprintf("%s\n%s", JSON::encode($header), JSON::encode($payload));
+        return \sprintf("%s\n%s", JSON::encode($header), JSON::encode($payload));
     }
     /**
      * @return array<string, mixed>
      *
-     * @psalm-return array{
+     * @phpstan-return array{
      *     type: string,
      *     value: string,
      *     stacktrace?: array{

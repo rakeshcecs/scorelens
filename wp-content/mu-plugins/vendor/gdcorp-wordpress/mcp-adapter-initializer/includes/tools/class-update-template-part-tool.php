@@ -143,6 +143,10 @@ class Update_Template_Part_Tool extends Base_Tool {
 							'type'        => 'string',
 							'description' => __( 'The theme slug', 'mcp-adapter-initializer' ),
 						),
+						'wp_id'   => array(
+							'type'        => array( 'integer', 'null' ),
+							'description' => __( 'Numeric post ID in wp_posts table; used for revision operations. Null when not yet persisted as a DB override.', 'mcp-adapter-initializer' ),
+						),
 						'content' => array(
 							'type'        => 'string',
 							'description' => __( 'The updated HTML content', 'mcp-adapter-initializer' ),
@@ -208,13 +212,27 @@ class Update_Template_Part_Tool extends Base_Tool {
 			 */
 			$existing_template = get_block_template( $wp_template_id, 'wp_template_part' );
 
+			/*
+			 * Resolve area with input taking precedence, else fall back to the
+			 * existing template part's area so the new DB override does not lose
+			 * the theme-defined area (e.g., default to "uncategorized").
+			 */
+			$resolved_area = '';
+			if ( isset( $input['area'] ) && is_string( $input['area'] ) && '' !== $input['area'] ) {
+				$resolved_area = sanitize_text_field( $input['area'] );
+			} elseif ( $existing_template && isset( $existing_template->area ) && is_string( $existing_template->area ) && '' !== $existing_template->area ) {
+				$resolved_area = $existing_template->area;
+			}
+
+			$was_already_db_backed = $existing_template && ! empty( $existing_template->wp_id );
+
 			// Prepare request object for WordPress REST API.
 			$request = new \WP_REST_Request( 'POST', '/wp/v2/template-parts' );
 			$request->set_param( 'id', $wp_template_id );
 			$request->set_param( 'theme', $theme );
 			$request->set_param( 'slug', $slug );
-			if ( isset( $input['area'] ) && is_string( $input['area'] ) && '' !== $input['area'] ) {
-				$request->set_param( 'area', sanitize_text_field( $input['area'] ) );
+			if ( '' !== $resolved_area ) {
+				$request->set_param( 'area', $resolved_area );
 			}
 			$request->set_param( 'content', $html_content );
 
@@ -241,7 +259,12 @@ class Update_Template_Part_Tool extends Base_Tool {
 				);
 			}
 
-			$data = $response->get_data();
+			$data  = $response->get_data();
+			$wp_id = isset( $data['wp_id'] ) ? (int) $data['wp_id'] : 0;
+
+			if ( ! $was_already_db_backed && $wp_id > 0 ) {
+				wp_save_post_revision( $wp_id );
+			}
 
 			return array(
 				'success' => true,
@@ -249,6 +272,7 @@ class Update_Template_Part_Tool extends Base_Tool {
 					'id'      => $data['id'],
 					'slug'    => $data['slug'],
 					'theme'   => $data['theme'],
+					'wp_id'   => $wp_id > 0 ? $wp_id : null,
 					'content' => $data['content']['raw'],
 				),
 				'message' => __( 'Template part updated successfully', 'mcp-adapter-initializer' ),

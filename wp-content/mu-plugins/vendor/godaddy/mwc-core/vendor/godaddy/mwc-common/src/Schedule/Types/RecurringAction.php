@@ -79,6 +79,10 @@ class RecurringAction extends Schedule implements SchedulableContract
             return;
         }
 
+        if (! function_exists('as_schedule_recurring_action')) {
+            return;
+        }
+
         as_schedule_recurring_action(
             $this->scheduleAt->getTimestamp(),
             $this->getIntervalTimestamp(),

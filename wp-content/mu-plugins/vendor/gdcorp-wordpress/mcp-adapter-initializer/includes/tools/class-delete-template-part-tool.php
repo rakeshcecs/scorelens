@@ -179,6 +179,7 @@ class Delete_Template_Part_Tool extends Base_Tool {
 				'title'       => $existing_template_part->title,
 				'description' => $existing_template_part->description,
 				'area'        => $existing_template_part->area ?? 'uncategorized',
+				'wp_id'       => isset( $existing_template_part->wp_id ) ? (int) $existing_template_part->wp_id : null,
 			);
 
 			// Check if this is a theme-only template part (no DB override)

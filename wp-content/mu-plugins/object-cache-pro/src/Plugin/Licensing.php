@@ -90,7 +90,23 @@ trait Licensing
             printf('<div class="notice notice-%s"><p>%s</p></div>', $type, $text);
         };
 
-        $license = $this->license();
+        $tokenNotice = function () use ($notice) {
+            $notice('info', implode(' ', [
+                'The Object Cache Pro license token has not been set and plugin updates have been disabled.',
+                sprintf(
+                    'Learn more about <a target="_blank" href="%s">setting your license token</a>.',
+                    'https://objectcache.pro/docs/configuration-options/#token'
+                ),
+            ]));
+        };
+
+        if (! $license = $this->license(true)) {
+            if (! $this->token()) {
+                $tokenNotice();
+            }
+
+            return;
+        }
 
         if ($license->isCanceled()) {
             $notice('error', implode(' ', [
@@ -115,13 +131,7 @@ trait Licensing
         }
 
         if (! $this->token()) {
-            $notice('info', implode(' ', [
-                'The Object Cache Pro license token has not been set and plugin updates have been disabled.',
-                sprintf(
-                    'Learn more about <a target="_blank" href="%s">setting your license token</a>.',
-                    'https://objectcache.pro/docs/configuration-options/#token'
-                ),
-            ]));
+            $tokenNotice();
 
             return;
         }
@@ -147,9 +157,10 @@ trait Licensing
      *
      * In all other cases the token is checked every 5 minutes to avoid stale licenses.
      *
-     * @return \RedisCachePro\License
+     * @param  bool  $readOnly
+     * @return \RedisCachePro\License|null
      */
-    public function license()
+    public function license($readOnly = false)
     {
         static $license = null;
 
@@ -157,7 +168,13 @@ trait Licensing
             return $license;
         }
 
-        $license = License::load();
+        $loaded = License::load();
+
+        if ($readOnly) {
+            return $loaded;
+        }
+
+        $license = $loaded;
 
         // if no license is stored or the token has changed, always attempt to fetch it
         if (! $license instanceof License || $license->token() !== $this->token()) {
@@ -387,17 +404,33 @@ trait Licensing
         $response = $this->request('plugin/update');
 
         if (is_wp_error($response)) {
+            $update = (object) (get_site_transient('objectcache_update') ?: []);
+
+            set_site_transient('objectcache_update', (object) [
+                'version' => $update->version ?? null,
+                'last_check' => time(),
+                'payload' => $update->payload ?? null,
+            ], DAY_IN_SECONDS);
+
             return $response;
         }
 
         /** @var \RedisCachePro\Support\PluginApiUpdateResponse $response */
+        $payload = ($encoded = json_encode($response)) ? base64_encode($encoded) : null;
+
         set_site_transient('objectcache_update', (object) [
             'version' => $response->version,
             'last_check' => time(),
+            'payload' => $payload,
         ], DAY_IN_SECONDS);
 
-        if ($response->license && ! $this->license()->isValid()) {
-            License::fromResponse($response->license);
+        if ($response->license) {
+            $current = $this->license(true);
+            $tokenChanged = $current && $current->token() !== $this->token();
+
+            if (! $current || $tokenChanged || ! $current->isValid()) {
+                License::fromResponse($response->license);
+            }
         }
 
         return $response;
@@ -458,7 +491,7 @@ trait Licensing
             'compression' => $diagnostics['config']['compression']->value ?? null,
             'serializer' => $diagnostics['config']['serializer']->value ?? null,
             'prefetch' => $diagnostics['config']['prefetch']->value ?? false,
-            'alloptions' => $diagnostics['config']['prefetch']->value ?? false,
+            'alloptions' => $diagnostics['config']['split_alloptions']->value ?? false,
             'strict' => $diagnostics['config']['strict']->value ?? false,
             'analytics' => $config->analytics->enabled ? $config->analytics->retention : false,
             'metrics' => $this->normalizedMetricsSnapshot(),
@@ -485,16 +518,16 @@ trait Licensing
     /**
      * Some hosting partners want the plugin removed when their customer moves away.
      *
-     * @param  \RedisCachePro\License  $license
+     * @param  \RedisCachePro\License|null  $license
      * @return void
      */
-    protected function killSwitch(License $license)
+    protected function killSwitch(?License $license)
     {
         $hosts = [
             'cloudways' => '0eaaea766b40',
         ];
 
-        $token = $license->token() ?? $this->token() ?? '';
+        $token = ($license ? $license->token() : null) ?? $this->token() ?? '';
 
         foreach ($hosts as $host => $key) {
             if (strpos((string) $token, $key) === 42 && $host !== Diagnostics::host()) {

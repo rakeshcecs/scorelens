@@ -9,7 +9,6 @@ use GoDaddy\WordPress\MWC\Common\Components\Traits\HasComponentsFromContainerTra
 use GoDaddy\WordPress\MWC\Common\Interceptors\AbstractInterceptor;
 use GoDaddy\WordPress\MWC\Core\Analytics\Interceptors\GoogleAnalyticsEventInterceptor;
 use GoDaddy\WordPress\MWC\Core\Analytics\Interceptors\ScriptEventDataInterceptor;
-use GoDaddy\WordPress\MWC\Core\Auth\Interceptors\UnschedulePlatformTokenRefreshInterceptor;
 use GoDaddy\WordPress\MWC\Core\Channels\Interceptors\FindOrCreateOrderChannelActionInterceptor;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\Catalog\Interceptors\AssetUserInterceptor;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\Catalog\Interceptors\SetDefaultsOnNewInstallsInterceptor;
@@ -78,7 +77,6 @@ class Interceptors implements ComponentContract
         DefaultSettings::class,
         ScriptEventDataInterceptor::class,
         SetDefaultsOnNewInstallsInterceptor::class,
-        UnschedulePlatformTokenRefreshInterceptor::class,
         StoreIdInterceptor::class, // @TODO move this to a new, less generic component in MWC-9753 {agibson 2022-12-21}
         StoreLocationChangeInterceptor::class,
         EnforcePostNamePermalinksInterceptor::class,

@@ -3,8 +3,7 @@
 declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Logger;
 
-use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\AbstractLogger;
-class DebugFileLogger extends AbstractLogger
+class DebugFileLogger extends DebugLogger
 {
     /**
      * @var string
@@ -14,12 +13,8 @@ class DebugFileLogger extends AbstractLogger
     {
         $this->filePath = $filePath;
     }
-    /**
-     * @param mixed   $level
-     * @param mixed[] $context
-     */
-    public function log($level, \Stringable|string $message, array $context = []): void
+    public function write(string $message): void
     {
-        file_put_contents($this->filePath, sprintf("sentry/sentry: [%s] %s\n", $level, (string) $message), \FILE_APPEND);
+        file_put_contents($this->filePath, $message, \FILE_APPEND);
     }
 }

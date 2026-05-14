@@ -28,12 +28,14 @@
 }
 
 .objectcache\:navbar .navbar-tab.is-active {
-    border-bottom: #0071a4 solid 3px;
+    border-bottom-style: solid;
+    border-bottom-width: 3px;
+    border-bottom-color: var(--wp-admin-theme-color, #0071a4);
     font-weight: bold;
 }
 
 .objectcache\:navbar .navbar-tab:hover {
-    color: #00a0d2;
+    color: var(--wp-admin-theme-color, #00a0d2);
 }
 
 .objectcache\:navbar .navbar-tab:focus {
@@ -342,7 +344,7 @@ body.js .is-unix-socket .hide-if-unix-socket {
 }
 
 .objectcache\:flushlog-widget details ul code span {
-    color: #2271b1;
+    color: var(--wp-admin-theme-color, #2271b1);
 }
 
 .objectcache\:flushlog-widget label {

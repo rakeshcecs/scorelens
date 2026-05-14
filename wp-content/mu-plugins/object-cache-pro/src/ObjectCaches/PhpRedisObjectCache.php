@@ -633,9 +633,9 @@ class PhpRedisObjectCache extends ObjectCache implements MeasuredObjectCacheInte
             }
 
             foreach ($remainingKeys as $index => $key) {
-                $values[$key] = $data[$index];
+                $values[$key] = $value = $data[$index] ?? false;
 
-                if ($data[$index] === false) {
+                if ($value === false) {
                     $this->metrics->misses += 1;
                     $this->metrics->storeMisses += 1;
 
@@ -649,7 +649,7 @@ class PhpRedisObjectCache extends ObjectCache implements MeasuredObjectCacheInte
                     $this->metrics->prefetches++;
                 }
 
-                $this->storeInMemory($payload[$index], $data[$index], $group);
+                $this->storeInMemory($payload[$index], $value, $group);
             }
         } catch (Throwable $exception) {
             $this->error($exception);

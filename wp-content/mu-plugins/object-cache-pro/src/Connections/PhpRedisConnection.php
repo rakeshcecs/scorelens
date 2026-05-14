@@ -377,7 +377,7 @@ class PhpRedisConnection extends Connection implements ConnectionInterface
             $memory = memory_get_usage() - $memory;
             $wait = (microtime(true) - $start) * 1000;
         } catch (Throwable $exception) {
-            $this->log->error('Failed to execute transaction', $context + [
+            $this->log->error("Failed to execute {$tx->describe()}", $context + [
                 'exception' => $exception,
             ]);
 

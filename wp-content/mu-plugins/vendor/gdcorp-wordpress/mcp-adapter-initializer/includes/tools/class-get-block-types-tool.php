@@ -112,36 +112,83 @@ class Get_Block_Types_Tool extends Base_Tool {
 					'items'       => array(
 						'type'       => 'object',
 						'properties' => array(
-							'name'        => array(
+							'name'           => array(
 								'type'        => 'string',
-								'description' => __( 'The block type name', 'mcp-adapter-initializer' ),
+								'description' => __( 'The block type name (e.g. core/paragraph)', 'mcp-adapter-initializer' ),
 							),
-							'title'       => array(
+							'title'          => array(
 								'type'        => 'string',
 								'description' => __( 'The block type title', 'mcp-adapter-initializer' ),
 							),
-							'description' => array(
+							'description'    => array(
 								'type'        => 'string',
 								'description' => __( 'The block type description', 'mcp-adapter-initializer' ),
 							),
-							'category'    => array(
+							'category'       => array(
 								'type'        => 'string',
 								'description' => __( 'The block category', 'mcp-adapter-initializer' ),
 							),
-							'icon'        => array(
+							'icon'           => array(
 								'type'        => array( 'string', 'object' ),
-								'description' => __( 'The block icon (string or object)', 'mcp-adapter-initializer' ),
+								'description' => __( 'The block icon (dashicon slug or SVG object)', 'mcp-adapter-initializer' ),
 							),
-							'keywords'    => array(
+							'keywords'       => array(
 								'type'        => 'array',
-								'description' => __( 'Array of block keywords', 'mcp-adapter-initializer' ),
+								'description' => __( 'Search keywords for block discovery', 'mcp-adapter-initializer' ),
 								'items'       => array(
 									'type' => 'string',
 								),
 							),
-							'supports'    => array(
+							'api_version'    => array(
+								'type'        => 'integer',
+								'description' => __( 'Block API version', 'mcp-adapter-initializer' ),
+							),
+							'is_dynamic'     => array(
+								'type'        => 'boolean',
+								'description' => __( 'Whether the block has a server-side render callback', 'mcp-adapter-initializer' ),
+							),
+							'parent'         => array(
+								'type'        => 'array',
+								'description' => __( 'Parent block types that can contain this block', 'mcp-adapter-initializer' ),
+								'items'       => array(
+									'type' => 'string',
+								),
+							),
+							'ancestor'       => array(
+								'type'        => 'array',
+								'description' => __( 'Ancestor block types (any level) that must contain this block', 'mcp-adapter-initializer' ),
+								'items'       => array(
+									'type' => 'string',
+								),
+							),
+							'allowed_blocks' => array(
+								'type'        => 'array',
+								'description' => __( 'Block types allowed as direct children', 'mcp-adapter-initializer' ),
+								'items'       => array(
+									'type' => 'string',
+								),
+							),
+							'attributes'     => array(
 								'type'        => 'object',
-								'description' => __( 'Block support settings', 'mcp-adapter-initializer' ),
+								'description' => __( 'Block attribute definitions (name → schema)', 'mcp-adapter-initializer' ),
+							),
+							'supports'       => array(
+								'type'        => 'object',
+								'description' => __( 'Block support settings (color, spacing, typography, etc.)', 'mcp-adapter-initializer' ),
+							),
+							'styles'         => array(
+								'type'        => 'array',
+								'description' => __( 'Registered block style variations', 'mcp-adapter-initializer' ),
+								'items'       => array(
+									'type' => 'object',
+								),
+							),
+							'variations'     => array(
+								'type'        => 'array',
+								'description' => __( 'Block variations with preset configurations', 'mcp-adapter-initializer' ),
+								'items'       => array(
+									'type' => 'object',
+								),
 							),
 						),
 					),
@@ -180,13 +227,21 @@ class Get_Block_Types_Tool extends Base_Tool {
 
 		foreach ( $registered_blocks as $block_name => $block_type ) {
 			$block_data = array(
-				'name'        => $block_name,
-				'title'       => isset( $block_type->title ) ? $block_type->title : '',
-				'description' => isset( $block_type->description ) ? $block_type->description : '',
-				'category'    => isset( $block_type->category ) ? $block_type->category : '',
-				'icon'        => isset( $block_type->icon ) ? $block_type->icon : '',
-				'keywords'    => isset( $block_type->keywords ) ? $block_type->keywords : array(),
-				'supports'    => isset( $block_type->supports ) ? $block_type->supports : array(),
+				'name'           => $block_name,
+				'title'          => isset( $block_type->title ) ? $block_type->title : '',
+				'description'    => isset( $block_type->description ) ? $block_type->description : '',
+				'category'       => isset( $block_type->category ) ? $block_type->category : '',
+				'icon'           => isset( $block_type->icon ) ? $block_type->icon : '',
+				'keywords'       => isset( $block_type->keywords ) ? $block_type->keywords : array(),
+				'api_version'    => isset( $block_type->api_version ) ? (int) $block_type->api_version : 1,
+				'is_dynamic'     => $block_type->is_dynamic(),
+				'parent'         => isset( $block_type->parent ) ? $block_type->parent : array(),
+				'ancestor'       => isset( $block_type->ancestor ) ? $block_type->ancestor : array(),
+				'allowed_blocks' => isset( $block_type->allowed_blocks ) ? $block_type->allowed_blocks : array(),
+				'attributes'     => $block_type->get_attributes(),
+				'supports'       => isset( $block_type->supports ) ? $block_type->supports : array(),
+				'styles'         => isset( $block_type->styles ) ? $block_type->styles : array(),
+				'variations'     => isset( $block_type->variations ) ? $block_type->variations : array(),
 			);
 
 			$block_types[] = $block_data;

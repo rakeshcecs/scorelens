@@ -32,6 +32,7 @@ return [
                 GoDaddy\WordPress\MWC\Core\JobQueue\Exceptions\QueuedJobHandlingFailedException::class                                 => 1,
                 GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Mapping\Exceptions\SyncMetadataJobSchedulingFailedException::class     => 1,
                 GoDaddy\WordPress\MWC\Core\Features\Commerce\V2\Mapping\Exceptions\SyncProductMetadataFailedException::class           => 1,
+                GoDaddy\WordPress\MWC\Core\Features\ConnectedCommerce\Exceptions\GoDaddyPaymentsConfigurationUpdateFailed::class       => 1,
             ],
         ],
     ],

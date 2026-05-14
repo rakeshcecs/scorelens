@@ -20,6 +20,7 @@ use GoDaddy\WordPress\MWC\Core\Features\Commerce\Locations\LocationsIntegration;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\Orders\OrdersIntegration;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\Traits\CanHandleWordPressDatabaseExceptionTrait;
 use GoDaddy\WordPress\MWC\Core\Features\Commerce\Traits\HasCommerceCapabilitiesTrait;
+use GoDaddy\WordPress\MWC\Core\Payments\Poynt;
 use GoDaddy\WordPress\MWC\Core\Traits\CanDetermineWhetherIsStagingSiteTrait;
 
 class Commerce extends AbstractFeature
@@ -86,11 +87,66 @@ class Commerce extends AbstractFeature
             return false;
         }
 
+        if (! static::hasHostingPlanRestriction() && ! static::storeIdsAreAligned()) {
+            return false;
+        }
+
         if (static::isStagingSite()) {
             return false;
         }
 
         return parent::shouldLoad();
+    }
+
+    /**
+     * Determines whether the feature is configured to run on specific hosting plans only.
+     */
+    protected static function hasHostingPlanRestriction() : bool
+    {
+        $allowedHostingPlans = TypeHelper::array(static::getConfiguration('allowedHostingPlans', []), []);
+
+        return ! empty($allowedHostingPlans);
+    }
+
+    /**
+     * Determines whether the Commerce default Store ID matches the configured Store ID (and the Payments-side Store ID when set).
+     *
+     * This guard is only meaningful once the platform has lifted Commerce's hosting-plan restriction — callers are
+     * expected to skip it while {@see static::hasHostingPlanRestriction()} still returns `true`, because the platform
+     * is gating access in that case. Once the restriction is lifted, the Connected Commerce flow expects the Commerce
+     * feature to target the same Store as the platform default — and the same Store as GoDaddy Payments when GoDaddy
+     * Payments is connected. If the customer picks a new Store while the previous Store ID is still configured,
+     * Commerce would otherwise start syncing records from the wrong Store until the scheduled actions catch up.
+     */
+    protected static function storeIdsAreAligned() : bool
+    {
+        // nothing to compare against; let the existing guards decide
+        if (! $defaultStoreId = static::determineDefaultStoreId()) {
+            return true;
+        }
+
+        if ($defaultStoreId !== static::getStoreId()) {
+            return false;
+        }
+
+        // GoDaddy Payments is not connected; only the default and configured Store IDs need to agree
+        if (! $goDaddyPaymentsStoreId = Poynt::getSiteStoreId()) {
+            return true;
+        }
+
+        return $defaultStoreId === $goDaddyPaymentsStoreId;
+    }
+
+    /**
+     * Returns the Commerce default Store ID from the platform's store repository.
+     */
+    protected static function determineDefaultStoreId() : ?string
+    {
+        try {
+            return PlatformRepositoryFactory::getNewInstance()->getPlatformRepository()->getStoreRepository()->determineDefaultStoreId();
+        } catch (PlatformRepositoryException $exception) {
+            return null;
+        }
     }
 
     /**

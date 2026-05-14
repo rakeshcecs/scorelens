@@ -3,6 +3,8 @@
 declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Profiling;
 
+use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\LoggerInterface;
+use GoDaddy\WordPress\MWC\Common\Vendor\Psr\Log\NullLogger;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Context\OsContext;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Context\RuntimeContext;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Event;
@@ -107,9 +109,14 @@ final class Profile
      * @var Options|null
      */
     private $options;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
     public function __construct(?Options $options = null)
     {
         $this->options = $options;
+        $this->logger = $options !== null ? $options->getLoggerOrNullLogger() : new NullLogger();
     }
     public function setStartTimeStamp(float $startTimeStamp): void
     {
@@ -132,17 +139,21 @@ final class Profile
     public function getFormattedData(Event $event): ?array
     {
         if (!$this->validateExcimerLog()) {
+            $this->logger->warning('The profile does not contain enough samples, the profile will be discarded.');
             return null;
         }
         $osContext = $event->getOsContext();
         if (!$this->validateOsContext($osContext)) {
+            $this->logger->warning('The OS context is not missing or invalid, the profile will be discarded.');
             return null;
         }
         $runtimeContext = $event->getRuntimeContext();
         if (!$this->validateRuntimeContext($runtimeContext)) {
+            $this->logger->warning('The runtime context is not missing or invalid, the profile will be discarded.');
             return null;
         }
         if (!$this->validateEvent($event)) {
+            $this->logger->warning('The event is missing a transaction and/or trace ID, the profile will be discarded.');
             return null;
         }
         $frames = [];
@@ -191,13 +202,15 @@ final class Profile
             $samples[] = ['stack_id' => $stackId, 'thread_id' => self::THREAD_ID, 'elapsed_since_start_ns' => (int) round($duration * 1000000000.0)];
         }
         if (!$this->validateMaxDuration((float) $duration)) {
+            $this->logger->warning(\sprintf('The profile is %ss which is longer than the allowed %ss, the profile will be discarded.', (float) $duration, self::MAX_PROFILE_DURATION));
             return null;
         }
         $startTime = \DateTime::createFromFormat('U.u', number_format($this->startTimeStamp, 4, '.', ''), new \DateTimeZone('UTC'));
         if ($startTime === \false) {
+            $this->logger->warning(\sprintf('The start time (%s) of the profile is not valid, the profile will be discarded.', $this->startTimeStamp));
             return null;
         }
-        return ['device' => ['architecture' => $osContext->getMachineType()], 'event_id' => $this->eventId ? (string) $this->eventId : SentryUid::generate(), 'os' => ['name' => $osContext->getName(), 'version' => $osContext->getVersion(), 'build_number' => $osContext->getBuild() ?? ''], 'platform' => 'php', 'release' => $event->getRelease() ?? '', 'environment' => $event->getEnvironment() ?? Event::DEFAULT_ENVIRONMENT, 'runtime' => ['name' => $runtimeContext->getName(), 'version' => $runtimeContext->getVersion()], 'timestamp' => $startTime->format(\DATE_RFC3339_EXTENDED), 'transaction' => ['id' => (string) $event->getId(), 'name' => $event->getTransaction(), 'trace_id' => $event->getTraceId(), 'active_thread_id' => self::THREAD_ID], 'version' => self::VERSION, 'profile' => ['frames' => $frames, 'samples' => $samples, 'stacks' => $stacks]];
+        return ['device' => ['architecture' => $osContext->getMachineType()], 'event_id' => $this->eventId ? (string) $this->eventId : SentryUid::generate(), 'os' => ['name' => $osContext->getName(), 'version' => $osContext->getVersion(), 'build_number' => $osContext->getBuild() ?? ''], 'platform' => 'php', 'release' => $event->getRelease() ?? '', 'environment' => $event->getEnvironment() ?? Event::DEFAULT_ENVIRONMENT, 'runtime' => ['name' => $runtimeContext->getName(), 'sapi' => $runtimeContext->getSAPI(), 'version' => $runtimeContext->getVersion()], 'timestamp' => $startTime->format(\DATE_RFC3339_EXTENDED), 'transaction' => ['id' => (string) $event->getId(), 'name' => $event->getTransaction(), 'trace_id' => $event->getTraceId(), 'active_thread_id' => self::THREAD_ID], 'version' => self::VERSION, 'profile' => ['frames' => $frames, 'samples' => $samples, 'stacks' => $stacks]];
     }
     /**
      * This method is mainly used to be able to mock the ExcimerLog class in the tests.

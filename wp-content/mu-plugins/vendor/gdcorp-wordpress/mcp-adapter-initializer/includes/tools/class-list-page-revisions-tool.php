@@ -22,6 +22,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Handles the registration and execution of the list page revisions ability
  * for the MCP adapter. Provides functionality similar to the WordPress
  * REST API /wp/v2/pages/<parent>/revisions endpoint.
+ *
+ * @todo Remove this tool once the Site Designer API is deployed with the new
+ *       `gd-mcp/list-post-revisions` tool name. Kept verbatim for backward
+ *       compatibility; do not merge with List_Post_Revisions_Tool.
  */
 class List_Page_Revisions_Tool extends Base_Tool {
 

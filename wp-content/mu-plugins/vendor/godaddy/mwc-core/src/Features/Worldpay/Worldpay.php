@@ -43,8 +43,7 @@ class Worldpay extends AbstractFeature
     public static function shouldLoad() : bool
     {
         return parent::shouldLoadFeature()
-            && PlatformRepositoryFactory::getNewInstance()->getPlatformRepository()->getGoDaddyCustomer()->getFederationPartnerId() === 'WORLDPAY'
-            && 'woosaas' === PlatformRepositoryFactory::getNewInstance()->getPlatformRepository()->getPlatformName();
+            && PlatformRepositoryFactory::getNewInstance()->getPlatformRepository()->getGoDaddyCustomer()->getFederationPartnerId() === 'WORLDPAY';
     }
 
     /**

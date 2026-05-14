@@ -35,7 +35,7 @@ abstract class AbstractRequest extends Request implements RequestContract
     }
 
     /**
-     * {@inheritDoc}
+     * Sets store UUID.
      *
      * @return $this
      */
@@ -49,6 +49,6 @@ abstract class AbstractRequest extends Request implements RequestContract
             // Ignore.
         }
 
-        return $this->traitSetStoreId($value);
+        return $this->traitSetStoreId($value); // @phpstan-ignore return.type (traitSetStoreId returns $this)
     }
 }

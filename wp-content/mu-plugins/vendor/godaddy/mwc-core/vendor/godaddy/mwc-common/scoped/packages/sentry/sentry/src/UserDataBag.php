@@ -114,7 +114,7 @@ final class UserDataBag
     public function setId($id): self
     {
         if ($id !== null && !\is_string($id) && !\is_int($id)) {
-            throw new \UnexpectedValueException(sprintf('Expected an integer or string value for the $id argument. Got: "%s".', get_debug_type($id)));
+            throw new \UnexpectedValueException(\sprintf('Expected an integer or string value for the $id argument. Got: "%s".', get_debug_type($id)));
         }
         $this->id = $id;
         return $this;
@@ -155,6 +155,8 @@ final class UserDataBag
     }
     /**
      * Gets the segement of the user.
+     *
+     * @deprecated since version 4.4. To be removed in version 5.0
      */
     public function getSegment(): ?string
     {
@@ -164,6 +166,8 @@ final class UserDataBag
      * Sets the segment of the user.
      *
      * @param string|null $segment The segment
+     *
+     * @deprecated since version 4.4. To be removed in version 5.0. You may use a custom tag or context instead.
      */
     public function setSegment(?string $segment): self
     {
@@ -184,8 +188,18 @@ final class UserDataBag
      */
     public function setIpAddress(?string $ipAddress): self
     {
-        if ($ipAddress !== null && filter_var($ipAddress, \FILTER_VALIDATE_IP) === \false) {
-            throw new \InvalidArgumentException(sprintf('The "%s" value is not a valid IP address.', $ipAddress));
+        if ($ipAddress !== null) {
+            // Strip brackets from IPv6 addresses (e.g. [::1] -> ::1)
+            if (strpos($ipAddress, '[') === 0 && substr($ipAddress, -1) === ']') {
+                $ipAddress = substr($ipAddress, 1, -1);
+            }
+            if (filter_var($ipAddress, \FILTER_VALIDATE_IP) === \false) {
+                $client = SentrySdk::getCurrentHub()->getClient();
+                if ($client !== null) {
+                    $client->getOptions()->getLoggerOrNullLogger()->debug(\sprintf('The "%s" value is not a valid IP address.', $ipAddress));
+                }
+                return $this;
+            }
         }
         $this->ipAddress = $ipAddress;
         return $this;

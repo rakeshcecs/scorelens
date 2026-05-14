@@ -61,7 +61,7 @@ class OAuth_Complete {
 	 */
 	public function register_page(): void {
 		$hook = add_submenu_page(
-			null,
+			'',
 			'Sign-in complete',
 			'Sign-in complete',
 			'edit_theme_options',

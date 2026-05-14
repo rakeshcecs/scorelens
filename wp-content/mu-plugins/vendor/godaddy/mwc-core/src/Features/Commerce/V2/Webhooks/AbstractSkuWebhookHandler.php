@@ -132,10 +132,21 @@ abstract class AbstractSkuWebhookHandler extends AbstractWebhookHandler
     {
         $remoteSkuId = $this->parseSkuFromPayload($webhook);
 
-        // query API for full sku object (as most events only contain partial data, and we want the entire sku with all relationships)
+        if ($this->isSkuUpdateLocked($remoteSkuId)) {
+            return;
+        }
+
         $skuRequestOutput = $this->getSkuFromApi($remoteSkuId);
 
         $this->updateOrCreateLocalProduct($webhook, $remoteSkuId, $skuRequestOutput);
+    }
+
+    /**
+     * Checks whether the given SKU is currently being updated from local to remote.
+     */
+    protected function isSkuUpdateLocked(string $remoteSkuId) : bool
+    {
+        return $this->skuService->hasUpdateLock($remoteSkuId);
     }
 
     /**

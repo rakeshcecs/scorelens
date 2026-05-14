@@ -3,16 +3,20 @@
 declare (strict_types=1);
 namespace GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics;
 
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Client;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Event;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\EventId;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\AbstractType;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\CounterType;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\DistributionType;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\GaugeType;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\SetType;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\CounterMetric;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\DistributionMetric;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\GaugeMetric;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Metrics\Types\Metric;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\SentrySdk;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\State\HubInterface;
 use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\State\Scope;
-use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\TransactionSource;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\SpanId;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Tracing\TraceId;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Unit;
+use GoDaddy\WordPress\MWC\Common\Vendor\Sentry\Util\TelemetryStorage;
 /**
  * @internal
  */
@@ -21,83 +25,108 @@ final class MetricsAggregator
     /**
      * @var int
      */
-    private const ROLLUP_IN_SECONDS = 10;
+    public const METRICS_BUFFER_SIZE = 1000;
+    private const METRIC_TYPES = [CounterMetric::TYPE => CounterMetric::class, DistributionMetric::TYPE => DistributionMetric::class, GaugeMetric::TYPE => GaugeMetric::class];
     /**
-     * @var array<string, AbstractType>
+     * @var TelemetryStorage<Metric>|null
      */
-    private $buckets = [];
-    private const METRIC_TYPES = [CounterType::TYPE => CounterType::class, DistributionType::TYPE => DistributionType::class, GaugeType::TYPE => GaugeType::class, SetType::TYPE => SetType::class];
+    private $metrics;
     /**
-     * @param string[]         $tags
-     * @param int|float|string $value
+     * @param int|float                            $value
+     * @param array<string, int|float|string|bool> $attributes
      */
-    public function add(string $type, string $key, $value, ?MetricsUnit $unit, array $tags, ?int $timestamp, int $stackLevel): void
+    public function add(string $type, string $name, $value, array $attributes, ?Unit $unit): void
     {
-        if ($timestamp === null) {
-            $timestamp = time();
-        }
-        if ($unit === null) {
-            $unit = MetricsUnit::none();
-        }
-        $tags = $this->serializeTags($tags);
-        $bucketTimestamp = floor($timestamp / self::ROLLUP_IN_SECONDS);
-        $bucketKey = md5($type . $key . $unit . implode('', $tags) . $bucketTimestamp);
-        if (\array_key_exists($bucketKey, $this->buckets)) {
-            $metric = $this->buckets[$bucketKey];
-            $metric->add($value);
-        } else {
-            $metricTypeClass = self::METRIC_TYPES[$type];
-            /** @var AbstractType $metric */
-            /** @phpstan-ignore-next-line SetType accepts int|float|string, others only int|float */
-            $metric = new $metricTypeClass($key, $value, $unit, $tags, $timestamp);
-            $this->buckets[$bucketKey] = $metric;
-        }
         $hub = SentrySdk::getCurrentHub();
         $client = $hub->getClient();
+        $metricFlushThreshold = null;
+        if (!\is_int($value) && !\is_float($value)) {
+            if ($client !== null) {
+                $client->getOptions()->getLoggerOrNullLogger()->debug('Metrics value is neither int nor float. Metric will be discarded');
+            }
+            return;
+        }
         if ($client !== null) {
             $options = $client->getOptions();
-            if ($options->shouldAttachMetricCodeLocations() && !$metric->hasCodeLocation()) {
-                $metric->addCodeLocation($stackLevel);
+            $metricFlushThreshold = $options->getMetricFlushThreshold();
+            if ($options->getEnableMetrics() === \false) {
+                return;
+            }
+            $defaultAttributes = ['sentry.environment' => $options->getEnvironment() ?? Event::DEFAULT_ENVIRONMENT, 'server.address' => $options->getServerName()];
+            if ($client instanceof Client) {
+                $defaultAttributes['sentry.sdk.name'] = $client->getSdkIdentifier();
+                $defaultAttributes['sentry.sdk.version'] = $client->getSdkVersion();
+            }
+            $hub->configureScope(static function (Scope $scope) use (&$defaultAttributes) {
+                $user = $scope->getUser();
+                if ($user !== null) {
+                    if ($user->getId() !== null) {
+                        $defaultAttributes['user.id'] = $user->getId();
+                    }
+                    if ($user->getEmail() !== null) {
+                        $defaultAttributes['user.email'] = $user->getEmail();
+                    }
+                    if ($user->getUsername() !== null) {
+                        $defaultAttributes['user.name'] = $user->getUsername();
+                    }
+                }
+            });
+            $release = $options->getRelease();
+            if ($release !== null) {
+                $defaultAttributes['sentry.release'] = $release;
+            }
+            $attributes += $defaultAttributes;
+        }
+        $traceContext = $this->getTraceContext($hub);
+        $traceId = new TraceId($traceContext['trace_id']);
+        $spanId = new SpanId($traceContext['span_id']);
+        $metricTypeClass = self::METRIC_TYPES[$type];
+        /** @var Metric $metric */
+        $metric = new $metricTypeClass($name, $value, $traceId, $spanId, $attributes, microtime(\true), $unit);
+        if ($client !== null) {
+            $beforeSendMetric = $client->getOptions()->getBeforeSendMetricCallback();
+            $metric = $beforeSendMetric($metric);
+            if ($metric === null) {
+                return;
             }
         }
-        $span = $hub->getSpan();
-        if ($span !== null) {
-            $span->setMetricsSummary($type, $key, $value, $unit, $tags);
+        $metrics = $this->getStorage($metricFlushThreshold);
+        $metrics->push($metric);
+        if ($metricFlushThreshold !== null && \count($metrics) >= $metricFlushThreshold) {
+            $this->flush($hub);
         }
     }
-    public function flush(): ?EventId
+    public function flush(?HubInterface $hub = null): ?EventId
     {
-        $hub = SentrySdk::getCurrentHub();
-        $event = Event::createMetrics()->setMetrics($this->buckets);
-        $this->buckets = [];
+        if ($this->metrics === null || $this->metrics->isEmpty()) {
+            return null;
+        }
+        $hub = $hub ?? SentrySdk::getCurrentHub();
+        $event = Event::createMetrics()->setMetrics($this->metrics->drain());
         return $hub->captureEvent($event);
     }
     /**
-     * @param string[] $tags
-     *
-     * @return string[]
+     * @return array{trace_id: string, span_id: string}
      */
-    private function serializeTags(array $tags): array
+    private function getTraceContext(HubInterface $hub): array
     {
-        $hub = SentrySdk::getCurrentHub();
-        $client = $hub->getClient();
-        if ($client !== null) {
-            $options = $client->getOptions();
-            $defaultTags = ['environment' => $options->getEnvironment() ?? Event::DEFAULT_ENVIRONMENT];
-            $release = $options->getRelease();
-            if ($release !== null) {
-                $defaultTags['release'] = $release;
-            }
-            $hub->configureScope(function (Scope $scope) use (&$defaultTags) {
-                $transaction = $scope->getTransaction();
-                if ($transaction !== null && $transaction->getMetadata()->getSource() !== TransactionSource::url()) {
-                    $defaultTags['transaction'] = $transaction->getName();
-                }
-            });
-            $tags = array_merge($defaultTags, $tags);
+        $traceContext = null;
+        $hub->configureScope(static function (Scope $scope) use (&$traceContext): void {
+            $traceContext = $scope->getTraceContext();
+        });
+        /** @var array{trace_id: string, span_id: string} $traceContext */
+        return $traceContext;
+    }
+    /**
+     * @return TelemetryStorage<Metric>
+     */
+    private function getStorage(?int $metricFlushThreshold = null): TelemetryStorage
+    {
+        if ($this->metrics === null) {
+            /** @var TelemetryStorage<Metric> $metrics */
+            $metrics = $metricFlushThreshold !== null ? TelemetryStorage::unbounded() : TelemetryStorage::bounded(self::METRICS_BUFFER_SIZE);
+            $this->metrics = $metrics;
         }
-        // It's very important to sort the tags in order to obtain the same bucket key.
-        ksort($tags);
-        return $tags;
+        return $this->metrics;
     }
 }
