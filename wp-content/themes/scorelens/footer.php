@@ -19,13 +19,19 @@
 	<!-- Brand column -->
 	<div class="sl-foot-brand">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="sl-brand sl-foot-logo">
-			<img
+<!-- 			<img
 				class="sl-brand-logo"
 				src="<?php echo esc_url( SCORELENS_URI . '/assets/images/scorelens_logo-H.svg' ); ?>"
 				alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
 				width="160"
 				height="40"
-			/>
+			/> -->
+			
+			<img
+				class="sl-brand-logo"
+				src="<?php echo esc_url( SCORELENS_URI . '/assets/images/scorelens_logo-H.svg' ); ?>"
+				alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+			/> 
 		</a>
 		<p class="sl-foot-tag"><?php esc_html_e( 'Simple. Accurate. Effective.', 'scorelens' ); ?></p>
 		<p class="sl-foot-company">
@@ -136,7 +142,11 @@ $sl_modal_trust     = __( 'No spam. Just early access + 1 month free Pro.', 'sco
 				<p class="sl-modal-desc"><?php echo wp_kses( $sl_modal_desc, [ 'strong' => [], 'b' => [], 'em' => [], 'br' => [] ] ); ?></p>
 			</div>
 			<div class="sl-modal-body">
-				<?php echo do_shortcode( $sl_modal_shortcode ); ?>
+<div id="sl-form-container">
+    <div id="sl-form-inner">
+        <?php echo do_shortcode('[fluentform id="1"]'); ?>
+    </div>
+</div>
 			</div>
 			<?php if ( ! empty( $sl_modal_trust ) ) : ?>
 				<p class="sl-modal-trust"><?php echo wp_kses( $sl_modal_trust, [ 'strong' => [], 'b' => [], 'em' => [], 'br' => [] ] ); ?></p>
@@ -144,6 +154,22 @@ $sl_modal_trust     = __( 'No spam. Just early access + 1 month free Pro.', 'sco
 		</div>
 	</div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Hide banner initially
+    var cookieBanner = document.querySelector('.cky-consent-container');
+    if(cookieBanner){
+        cookieBanner.style.display = 'none';
+    }
+
+    // Show after 5 seconds (5000 ms)
+    setTimeout(function(){
+        if(cookieBanner){
+            cookieBanner.style.display = 'block';
+        }
+    }, 5000);
+});
+</script>
 
 <?php wp_footer(); ?>
 </body>

@@ -279,6 +279,14 @@
 	   ESC key closes. Body scroll is locked while open.
 	   ══════════════════════════════════════════════════════════ */
 	function initModal() {
+		/* Auto-wire any footer "Contact" link (href="#contact") to open the modal —
+		   this allows WP Admin menu items to trigger the modal without needing
+		   a data-attribute on the menu item itself. */
+		document.querySelectorAll( '.sl-foot-col a[href$="#contact"], .sl-foot-col a[href="#contact"]' ).forEach( function ( link ) {
+			link.setAttribute( 'data-sl-modal-open', 'sl-cta-modal' );
+		} );
+		
+		
 		var openTriggers = document.querySelectorAll( '[data-sl-modal-open]' );
 		if ( ! openTriggers.length ) return;
 
@@ -367,6 +375,25 @@
 		window.addEventListener( 'scroll', toggle, { passive: true } );
 		toggle();
 	}
+	
+	/* ══════════════════════════════════════════════════════════
+	   FAQ ACCORDION — only one item open at a time
+	   ══════════════════════════════════════════════════════════ */
+	function initFAQ() {
+		var items = document.querySelectorAll( '.sl-faq-item' );
+		if ( ! items.length ) return;
+
+		items.forEach( function ( item ) {
+			item.addEventListener( 'toggle', function () {
+				if ( ! item.open ) return;
+				items.forEach( function ( other ) {
+					if ( other !== item && other.open ) {
+						other.open = false;
+					}
+				} );
+			} );
+		} );
+	}
 
 	/* ══════════════════════════════════════════════════════════
 	   INIT — wait for DOM
@@ -382,6 +409,7 @@
 		initMobileNav();
 		initModal();
 		initScrollToTop();
+		initFAQ();
 	} );
 
 } )();

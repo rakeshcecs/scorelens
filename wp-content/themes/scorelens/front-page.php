@@ -33,7 +33,10 @@ get_header();
 			<span class="sl-hero-tagline sl-fade sl-d1">
 				<?php esc_html_e( 'Simple. Accurate. Effective.', 'scorelens' ); ?>
 			</span>
-
+			<p class="sl-hero-insight sl-fade sl-d2" style="margin: 8px 0 24px;">
+				<?php esc_html_e( 'Most aspirants don\'t fail because they lack effort.', 'scorelens' ); ?><br>
+				<?php esc_html_e( 'They fail because they never discover their weak areas in time.', 'scorelens' ); ?>
+			</p>
 			<p class="sl-hero-lede sl-fade sl-d2">
 				<?php esc_html_e( 'ScoreLens recreates the real SSC and PSC exam environment — full-length mocks, strict timing, and actual exam patterns — and delivers AI-driven insights to pinpoint what\'s holding your score back and how to fix it.', 'scorelens' ); ?>
 			</p>
@@ -385,8 +388,11 @@ get_header();
 		<?php esc_html_e( 'Simple pricing.', 'scorelens' ); ?>
 		<span class="sl-serif"><?php esc_html_e( 'Real results', 'scorelens' ); ?></span>.
 	</h2>
+<!-- 	<p class="sl-section-lede">
+		<?php // esc_html_e( 'A freemium model built for aspirants on a budget. No hidden costs, no trial traps.', 'scorelens' ); ?>
+	</p> -->
 	<p class="sl-section-lede">
-		<?php esc_html_e( 'A freemium model built for aspirants on a budget. No hidden costs, no trial traps.', 'scorelens' ); ?>
+		<?php esc_html_e( 'A freemium model built for aspirants on a budget. No hidden costs, no trial traps, no credit card required.', 'scorelens' ); ?>
 	</p>
 
 	<div class="sl-pricing">
@@ -418,9 +424,10 @@ get_header();
 				<li><?php esc_html_e( 'Time-per-question tracking', 'scorelens' ); ?></li>
 				<li><?php esc_html_e( 'Historical progress trends', 'scorelens' ); ?></li>
 			</ul>
-			<a href="#" class="sl-btn sl-btn--disabled" aria-disabled="true">
-				<span><?php esc_html_e( 'Coming soon', 'scorelens' ); ?></span>
+			<a href="#" class="sl-btn sl-btn--ghost" data-sl-modal-open="sl-cta-modal">
+				<span><?php esc_html_e( 'Join early access', 'scorelens' ); ?></span>
 			</a>
+			
 		</div>
 
 		<!-- Pro Annual — coming soon -->
@@ -434,12 +441,103 @@ get_header();
 				<li><?php esc_html_e( 'Early access to new exams', 'scorelens' ); ?></li>
 				<li><?php esc_html_e( 'Locked-in price for 12 months', 'scorelens' ); ?></li>
 			</ul>
-			<a href="#" class="sl-btn sl-btn--disabled" aria-disabled="true">
-				<?php esc_html_e( 'Coming soon', 'scorelens' ); ?>
+ 		
+			<a href="#" class="sl-btn sl-btn--ghost" data-sl-modal-open="sl-cta-modal">
+				<span><?php esc_html_e( 'Join early access', 'scorelens' ); ?></span>
 			</a>
 		</div>
 
 	</div>
 </section>
 
+<!-- ════════════ FAQ ════════════ -->
+<?php
+/* Single source of truth — drives both the visible accordion and the FAQPage JSON-LD below. */
+$sl_faqs = [
+	[
+		'q' => __( 'What is ScoreLens?', 'scorelens' ),
+		'a' => __( 'ScoreLens is an SSC mock test analytics platform that helps aspirants analyze performance, identify weak topics, track accuracy, and prepare smarter for competitive exams.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'How does ScoreLens help SSC aspirants?', 'scorelens' ),
+		'a' => __( 'ScoreLens helps SSC aspirants understand where they lose marks in mock tests. It provides performance insights, weak-topic analysis, accuracy tracking, and time management analytics to improve exam preparation.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'Can ScoreLens analyze SSC mock test performance?', 'scorelens' ),
+		'a' => __( 'Yes. ScoreLens analyzes SSC mock test performance and provides detailed insights such as subject-wise accuracy, weak areas, time spent, and overall performance trends.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'Which exams are supported by ScoreLens?', 'scorelens' ),
+		'a' => __( 'ScoreLens is currently focused on SSC exams including SSC CGL, SSC CHSL, and SSC MTS. Support for additional competitive exams and State PSCs will be added in the near future.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'How can mock test analytics improve SSC preparation?', 'scorelens' ),
+		'a' => __( 'Mock test analytics help aspirants identify weak subjects, improve accuracy, manage time better, and focus on areas that need improvement instead of relying on guesswork.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'Is ScoreLens free to use?', 'scorelens' ),
+		'a' => __( 'Yes. ScoreLens offers a free plan that includes 2 full-length mock tests per month, basic score and subject breakdowns, limited topic-wise practice, and community access. Pro plans with advanced analytics, unlimited mocks, topic-wise tests, and detailed performance tracking are also planned.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'Why is mock test analysis important for SSC exams?', 'scorelens' ),
+		'a' => __( 'Mock test analysis helps SSC aspirants understand performance patterns, avoid repeated mistakes, and improve speed and accuracy. AI-powered analytics in ScoreLens help identify areas that need improvement faster.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'Does ScoreLens provide topic-wise performance analysis?', 'scorelens' ),
+		'a' => __( 'Yes. ScoreLens uses AI-powered analytics to provide topic-wise and subject-wise performance analysis, helping aspirants identify strengths, weak areas, and preparation gaps.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'How often should SSC aspirants analyze mock tests?', 'scorelens' ),
+		'a' => __( 'SSC aspirants should analyze every mock test after completion. ScoreLens uses AI-powered analytics to track improvement, identify recurring mistakes, and improve exam performance over time.', 'scorelens' ),
+	],
+	[
+		'q' => __( 'What makes ScoreLens different from other SSC preparation platforms?', 'scorelens' ),
+		'a' => __( 'Unlike traditional mock test platforms, ScoreLens uses AI-powered analytics to help aspirants understand why scores are low and which areas need improvement.', 'scorelens' ),
+	],
+];
+?>
+<section class="sl-block" id="sl-faq">
+	<div class="sl-section-label"><?php esc_html_e( 'FAQ', 'scorelens' ); ?></div>
+	<h2 class="sl-section-h">
+		<?php esc_html_e( 'Common questions,', 'scorelens' ); ?>
+		<span class="sl-serif"><?php esc_html_e( 'honest answers', 'scorelens' ); ?></span>.
+	</h2>
+	<p class="sl-section-lede">
+		<?php esc_html_e( 'Everything you need to know before signing up.', 'scorelens' ); ?>
+	</p>
+
+	<div class="sl-faq">
+		<?php foreach ( $sl_faqs as $faq ) : ?>
+			<details class="sl-faq-item">
+				<summary class="sl-faq-q">
+					<span><?php echo esc_html( $faq['q'] ); ?></span>
+					<span class="sl-faq-icon" aria-hidden="true"></span>
+				</summary>
+				<div class="sl-faq-a">
+					<p><?php echo esc_html( $faq['a'] ); ?></p>
+				</div>
+			</details>
+		<?php endforeach; ?>
+	</div>
+</section>
+
+<!-- FAQPage Schema (JSON-LD) — auto-generated from the same $sl_faqs array above -->
+<script type="application/ld+json">
+<?php
+echo wp_json_encode( [
+	'@context'   => 'https://schema.org',
+	'@type'      => 'FAQPage',
+	'mainEntity' => array_map( function ( $faq ) {
+		return [
+			'@type'          => 'Question',
+			'name'           => $faq['q'],
+			'acceptedAnswer' => [
+				'@type' => 'Answer',
+				'text'  => $faq['a'],
+			],
+		];
+	}, $sl_faqs ),
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+?>
+</script>
 <?php get_footer(); ?>
