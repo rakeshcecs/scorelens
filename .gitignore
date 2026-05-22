@@ -1,0 +1,5 @@
+wp-content/themes/scorelens/html/
+wp-admin/
+wp-includes/
+.htaccess
+wp-config.php
