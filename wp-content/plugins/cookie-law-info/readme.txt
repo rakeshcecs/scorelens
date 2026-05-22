@@ -5,7 +5,7 @@ Tags: cookie consent, cookie banner, cookie notice, gdpr, ccpa
 Requires at least: 5.0.0
 Tested up to: 7.0
 Requires PHP: 5.6
-Stable tag: 3.4.2
+Stable tag: 3.5.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -259,6 +259,13 @@ Every time we update the plugin, you will see a notification on the installed pl
 
 == Changelog ==
 
+= 3.5.0 =
+
+[Enhancement] - Rebuilt the admin interface with React for a faster, more reliable experience.
+[Fix] - Minor bugs and UI improvements.
+[Fix] - Security improvements.
+[Add] - "Become a Partner" menu in the header to join the Agency or Affiliate partner program.
+
 = 3.4.2 =
 
 [Compatibility] Updated WordPress compatibility to 7.0
@@ -274,6 +281,9 @@ For the changelog of earlier versions, please refer to the [changelog.txt](https
 
 == Upgrade Notice ==
 
-= 3.4.2 =
+= 3.5.0 =
 
-[Compatibility] Updated WordPress compatibility to 7.0
+[Enhancement] - Rebuilt the admin interface with React for a faster, more reliable experience.
+[Fix] - Minor bugs and UI improvements.
+[Fix] - Security improvements.
+[Add] - "Become a Partner" menu in the header to join the Agency or Affiliate partner program.

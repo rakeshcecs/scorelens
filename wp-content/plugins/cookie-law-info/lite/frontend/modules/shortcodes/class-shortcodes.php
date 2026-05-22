@@ -114,7 +114,7 @@ class Shortcodes {
 	 * @return void
 	 */
 	private function load_shortcodes() {
-		$this->shortcodes = cky_read_json_file( dirname( __FILE__ ) . '/versions/shortcodes.json' );
+		$this->shortcodes = cky_read_json_file( dirname( __FILE__ ) . '/versions/' . esc_html( $this->template ) . '/shortcodes.json' );
 	}
 	/**
 	 * Init shortcodes.

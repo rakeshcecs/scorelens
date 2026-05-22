@@ -102,7 +102,7 @@ class Category_Controller extends Base_Controller {
 			visibility int(11) NOT NULL default 1,
 			priority int(11) NOT NULL default 0,
 			sell_personal_data int(11) NOT NULL default 0,
-			meta longtext NULL, 
+			meta longtext NULL,
 			date_created datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 			date_modified datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 			PRIMARY KEY (category_id),

@@ -1,11 +1,12 @@
 <?php
-/**
- * Initialize the plugin.
- */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/**
+ * Initialize the plugin.
+ */
 
 if ( ! function_exists( 'cky_define_constants' ) ) {
 	/**

@@ -184,3 +184,18 @@ class ScoreLens_Nav_Walker extends Walker_Nav_Menu {
 
 	public function end_el( &$output, $data_object, $depth = 0, $args = null ) {}
 }
+
+
+add_filter('fluentform/submission_email_body', function ($emailBody, $notification, $submittedData, $form) {
+    $emailBody = preg_replace(
+        '/<tr[^>]*>\s*<td[^>]*>.*?Powered by.*?FluentForm.*?<\/td>\s*<\/tr>/is',
+        '',
+        $emailBody
+    );
+    $emailBody = preg_replace(
+        '/&copy;\s*ScoreLens\.\s*Powered by\s*<a[^>]*>FluentForm<\/a>\.?/is',
+        '',
+        $emailBody
+    );
+    return $emailBody;
+}, 10, 4);

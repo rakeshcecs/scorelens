@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The file that defines the core plugin class
  *
@@ -11,10 +16,6 @@
  * @package    Cookie_Law_Info
  * @subpackage Cookie_Law_Info/includes
  */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 
 /**
  * The core plugin class.
@@ -77,7 +78,7 @@ class Cookie_Law_Info {
 		if ( defined( 'CLI_VERSION' ) ) {
 			$this->version = CLI_VERSION;
 		} else {
-			$this->version = '3.4.2';
+			$this->version = '3.5.0';
 		}
 		$this->plugin_name = 'cookie-law-info';
 
@@ -112,24 +113,24 @@ class Cookie_Law_Info {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cookie-law-info-loader.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cookie-law-info-loader.php';
 
 		/**
 		 * The class which integrates Cookieyes services to the plugin
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cookie-law-info-cookieyes.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cookie-law-info-cookieyes.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cookie-law-info-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cookie-law-info-i18n.php';
 
 		/**
 		 * The class responsible for handling multi language features
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cookie-law-info-languages.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cookie-law-info-languages.php';
 
 		/**
 		 * The class which integrates Cookieyes services to the plugin
@@ -139,22 +140,23 @@ class Cookie_Law_Info {
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'admin/class-cookie-law-info-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-cookie-law-info-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'public/class-cookie-law-info-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-cookie-law-info-public.php';
 
 		/**
 		 * The class responsible for adding compatibility to third party plugins
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'third-party/class-cookie-law-info-third-party.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'third-party/class-cookie-law-info-third-party.php';
 
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cookie-law-info-review-request.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cookie-law-info-review-request.php';
 
 		$this->loader = new Cookie_Law_Info_Loader();
+
 	}
 
 	/**
@@ -171,6 +173,7 @@ class Cookie_Law_Info {
 		$plugin_i18n = new Cookie_Law_Info_i18n();
 
 		$this->loader->add_action( 'init', $plugin_i18n, 'load_plugin_textdomain' );
+
 	}
 
 	/**
@@ -193,12 +196,15 @@ class Cookie_Law_Info {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_notices', $plugin_admin, 'render_update_banner', 1 );
+		$this->loader->add_action( 'admin_footer', $plugin_admin, 'render_update_modals' );
 
 		/*
 		.
 		* loading admin modules
 		*/
 		$plugin_admin->admin_modules();
+
 	}
 
 	/**
@@ -317,8 +323,8 @@ class Cookie_Law_Info {
 		}
 	}
 	/**
-	Returns default settings
-	If you override the settings here, be ultra careful to use escape characters!
+	 Returns default settings
+	 If you override the settings here, be ultra careful to use escape characters!
 	 */
 	public static function get_default_settings( $key = '' ) {
 		$settings_v0_9 = array(
@@ -420,8 +426,8 @@ class Cookie_Law_Info {
 	}
 
 	/**
-	Returns JSON object containing the settings for the main script
-	REFACTOR / DEBUG: may need to use addslashes( ... ) else breaks JSON
+	 Returns JSON object containing the settings for the main script
+	 REFACTOR / DEBUG: may need to use addslashes( ... ) else breaks JSON
 	 */
 	public static function get_json_settings() {
 		$settings = self::get_settings();
@@ -501,7 +507,7 @@ class Cookie_Law_Info {
 
 	/**
 	Returns sanitised content based on field-specific rules defined here
-	Used for both read AND write operations
+	 Used for both read AND write operations
 	 */
 	public static function sanitise_settings( $key, $value ) {
 		$ret = null;
@@ -604,7 +610,7 @@ class Cookie_Law_Info {
 	}
 	public static function wt_cli_clean( $var ) {
 		if ( is_array( $var ) ) {
-			return array_map( 'Cookie_Law_Info::wt_cli_clean', $var );
+			return array_map( 'Cookie_Law_Info::wt_cli_clean' , $var );
 		} else {
 			return is_scalar( $var ) ? sanitize_text_field( $var ) : $var;
 		}
@@ -729,15 +735,15 @@ class Cookie_Law_Info {
 	}
 
 	/**
-	Returns list of HTML tags allowed in HTML fields for use in declaration of wp_kset field validation.
+	 Returns list of HTML tags allowed in HTML fields for use in declaration of wp_kset field validation.
 
-	Deliberately allows class and ID declarations to assist with custom CSS styling.
-	To customise further, see the excellent article at: http://ottopress.com/2010/wp-quickie-kses/
+	 Deliberately allows class and ID declarations to assist with custom CSS styling.
+	 To customise further, see the excellent article at: http://ottopress.com/2010/wp-quickie-kses/
 	 */
 	public static function allowed_html() {
 		$allowed_html = array(
-			// Allowed:     <a href="" id="" class="" title="" target="">...</a>
-			// Not allowed: <a href="javascript(...);">...</a>
+			// Allowed:		<a href="" id="" class="" title="" target="">...</a>
+			// Not allowed:	<a href="javascript(...);">...</a>
 			'a'      => array(
 				'href'   => array(),
 				'id'     => array(),
@@ -805,9 +811,9 @@ class Cookie_Law_Info {
 
 
 	/**
-	Returns list of allowed protocols, for use in declaration of wp_kset field validation.
-	N.B. JavaScript is specifically disallowed for security reasons.
-	Don't even trust your own database, as you don't know if another plugin has written to your settings.
+	 Returns list of allowed protocols, for use in declaration of wp_kset field validation.
+	 N.B. JavaScript is specifically disallowed for security reasons.
+	 Don't even trust your own database, as you don't know if another plugin has written to your settings.
 	 */
 	public static function allowed_protocols() {
 		// Additional options: 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet'
@@ -948,7 +954,7 @@ class Cookie_Law_Info {
 	 * @return void
 	 */
 	public function start_migration() {
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'migrate' ) || ! current_user_can( 'manage_options' ) ) {
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'migrate' ) || ! current_user_can( 'manage_options' )) {
 			return;
 		}
 		if ( isset( $_GET['migrate'] ) && 'start' === sanitize_text_field( wp_unslash( $_GET['migrate'] ) ) ) {
@@ -961,6 +967,7 @@ class Cookie_Law_Info {
 			$dismiss_url = add_query_arg( $params, admin_url( 'admin.php?page=cookie-law-info' ) );
 			wp_safe_redirect( $dismiss_url );
 		}
+
 	}
 
 	/**

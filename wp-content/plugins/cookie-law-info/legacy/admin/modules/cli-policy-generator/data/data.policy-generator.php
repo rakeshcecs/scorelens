@@ -1,12 +1,13 @@
 <?php
-/*
-* Default text for Privacy Generator
-*
-**/
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/*
+* Default text for Privacy Generator
+*
+**/
 $cli_pg_default_data = array(
 	array(
 		'head'      => 'About this cookie policy',

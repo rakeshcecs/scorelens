@@ -1,4 +1,5 @@
 <?php
+
 /**
  * WordPress file system API.
  *
@@ -197,7 +198,7 @@ class Filesystem {
 			}
 		} else {
 			if ( file_exists( $file_path ) && is_file( $file_path ) ) {
-				return @file_get_contents( $file_path );
+				return file_get_contents( $file_path );
 			}
 		}
 		return false;

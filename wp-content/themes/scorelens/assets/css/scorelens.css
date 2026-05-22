@@ -292,12 +292,13 @@ button { font-family: inherit; }
 .sl-brand-mark { width: 32px; height: 32px; flex-shrink: 0; }
 
 .sl-brand-logo {
-	width: 300px;
+	width: 250px;
 	height: auto;
 	flex-shrink: 0;
 	display: block;
 	transition: filter .4s ease;
 }
+
 :root[data-theme="dark"] .sl-brand-logo {
 	filter: brightness(0) invert(1);
 }

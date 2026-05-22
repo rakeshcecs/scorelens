@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Register all actions and filters for the plugin
  *
@@ -9,10 +13,6 @@
  * @package    Cookie_Law_Info
  * @subpackage Cookie_Law_Info/includes
  */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 
 /**
  * Register all actions and filters for the plugin.

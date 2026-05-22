@@ -1,11 +1,12 @@
 <?php
-/**
- * Load legacy files.
- */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/**
+ * Load legacy files.
+ */
 
 if ( ! function_exists( 'cky_define_constants' ) ) {
 	/**

@@ -75,7 +75,7 @@ class Banner extends Store {
 		if ( $this->get_id() > 0 ) {
 			$this->read( $this );
 		} else {
-			$this->set_settings( $this->controller->get_default_configs() );
+			$this->set_settings( $this->controller->get_default_configs( 'gdpr', '6.2.0' ) );
 			$this->set_contents( self::get_default_contents() );
 		}
 	}

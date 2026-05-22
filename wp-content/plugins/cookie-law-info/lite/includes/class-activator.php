@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Fired during plugin activation
  *
@@ -11,12 +12,12 @@
 
 namespace CookieYes\Lite\Includes;
 
+use CookieYes\Lite\Admin\Modules\Banners\Includes\Banner;
+use CookieYes\Lite\Admin\Modules\Banners\Includes\Controller;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-use CookieYes\Lite\Admin\Modules\Banners\Includes\Banner;
-use CookieYes\Lite\Admin\Modules\Banners\Includes\Controller;
 
 /**
  * Fired during plugin activation.
@@ -56,6 +57,9 @@ class Activator {
 		),
 		'3.4.1' => array(
 			'update_db_341',
+		),
+		'3.5.0' => array(
+			'update_db_350',
 		),
 	);
 	/**
@@ -162,7 +166,7 @@ class Activator {
 		foreach ( self::$db_updates as $version => $callbacks ) {
 			if ( version_compare( $current_version, $version, '<' ) ) {
 				foreach ( $callbacks as $callback ) {
-					self::{$callback}();
+					self::$callback();
 				}
 			}
 		}
@@ -237,8 +241,14 @@ class Activator {
 		}
 	}
 
+	/**
+	 * Fix the accept-button state on CCPA vs non-CCPA banners for users who
+	 * migrated from the legacy UI (which left every banner with accept enabled).
+	 *
+	 * @since 3.4.0
+	 * @return void
+	 */
 	public static function update_db_340() {
-		// Only run this migration for users who have migrated from legacy UI
 		$migration_options = get_option( 'cky_migration_options', array() );
 		$migration_status  = isset( $migration_options['status'] ) ? $migration_options['status'] : false;
 
@@ -252,7 +262,6 @@ class Activator {
 			$settings = $banner->get_settings();
 			$law      = $banner->get_law();
 
-			// For CCPA banners, explicitly disable the accept button
 			if ( 'ccpa' === $law ) {
 				if ( isset( $settings['config']['notice']['elements']['buttons']['elements']['accept'] ) ) {
 					$settings['config']['notice']['elements']['buttons']['elements']['accept']['status'] = false;
@@ -260,7 +269,6 @@ class Activator {
 					$banner->save();
 				}
 			} else {
-				// For non-CCPA banners, enable the accept button if it's disabled
 				if ( isset( $settings['config']['notice']['elements']['buttons']['elements']['accept']['status'] )
 					&& false === $settings['config']['notice']['elements']['buttons']['elements']['accept']['status'] ) {
 					$settings['config']['notice']['elements']['buttons']['elements']['accept']['status'] = true;
@@ -272,9 +280,11 @@ class Activator {
 	}
 
 	/**
-	 * Remove accessibilityOverrides from banners with versionID 6.0.0; refresh stored banner HTML and CCPA opt-out success data.
+	 * Remove accessibilityOverrides from banners with versionID 6.0.0, seed
+	 * default opt-out success content on CCPA banners, and purge the banner
+	 * template cache so the refreshed HTML/theme is regenerated.
 	 *
-	 * @since 3.3.8
+	 * @since 3.4.1
 	 * @return void
 	 */
 	public static function update_db_341() {
@@ -295,7 +305,23 @@ class Activator {
 	}
 
 	/**
-	 * Remove legacy accessibilityOverrides for 6.0.0 banners (or banners missing versionID).
+	 * Invalidate cached banner markup so the front end rebuilds HTML from the
+	 * current plugin templates and shortcodes (preference-center IDs, button
+	 * ARIA, etc.).
+	 *
+	 * @since 3.5.0
+	 * @return void
+	 */
+	public static function update_db_350() {
+		$controller = Controller::get_instance();
+		$controller->delete_cache();
+		delete_option( 'cky_banner_template' );
+		Cache::delete( 'banner_template' );
+		$controller->delete_cache();
+	}
+
+	/**
+	 * Drop legacy accessibilityOverrides for 6.0.0 banners (or banners missing versionID).
 	 *
 	 * @param object $item Row from Controller::get_items(); settings are decoded JSON.
 	 * @return void
@@ -328,7 +354,8 @@ class Activator {
 	}
 
 	/**
-	 * Ensure CCPA banners have optoutSuccess config + per-language strings (for old DBs missing them).
+	 * Ensure CCPA banners have optoutSuccess config + per-language strings
+	 * (for databases created before this field existed).
 	 *
 	 * @param array $items Rows from Controller::get_items().
 	 * @return void

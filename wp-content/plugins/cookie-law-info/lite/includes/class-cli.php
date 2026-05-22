@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The file that defines the core plugin class
  *
@@ -14,15 +15,15 @@
 
 namespace CookieYes\Lite\Includes;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 use CookieYes\Lite\Includes\Loader;
 use CookieYes\Lite\Includes\I18n;
 use CookieYes\Lite\Admin\Admin;
 use CookieYes\Lite\Frontend\Frontend;
 use CookieYes\Lite\Admin\Modules\Settings\Includes\Settings;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * The core plugin class.
@@ -90,7 +91,7 @@ class CLI {
 		if ( defined( 'CLI_VERSION' ) ) {
 			$this->version = CLI_VERSION;
 		} else {
-			$this->version = '3.4.2';
+			$this->version = '3.5.0';
 		}
 		$this->plugin_name = 'cookie-law-info';
 
@@ -99,6 +100,28 @@ class CLI {
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 		$this->init_license();
+
+	}
+
+	/**
+	 * Initialize the license / cloud request flag.
+	 * Defines CKY_CLOUD_REQUEST so consent logs and other cloud APIs can return data when connected.
+	 *
+	 * @return void
+	 */
+	public function init_license() {
+		$settings  = new Settings();
+		$settings  = $settings->get();
+		$connected = isset( $settings['account']['connected'] ) && true === $settings['account']['connected'];
+		if ( $connected ) {
+			if ( ! defined( 'CKY_CLOUD_REQUEST' ) ) {
+				define( 'CKY_CLOUD_REQUEST', true );
+			}
+		} else {
+			if ( ! defined( 'CKY_CLOUD_REQUEST' ) ) {
+				define( 'CKY_CLOUD_REQUEST', false );
+			}
+		}
 	}
 
 	/**
@@ -119,15 +142,15 @@ class CLI {
 	 */
 	private function load_dependencies() {
 
-		require_once plugin_dir_path( __DIR__ ) . 'admin/cross-promotion-banners/class-wbte-cross-promotion-banners.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/cross-promotion-banners/class-wbte-cross-promotion-banners.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-utils.php';
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-formatting.php';
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-i18n-helpers.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-utils.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-formatting.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-i18n-helpers.php';
 		$this->loader = new \CookieYes\Lite\Includes\Loader();
 	}
 
@@ -144,6 +167,7 @@ class CLI {
 
 		$plugin_i18n = I18n::get_instance();
 		$this->loader->add_action( 'init', $plugin_i18n, 'load_plugin_textdomain' );
+
 	}
 
 	/**
@@ -157,6 +181,7 @@ class CLI {
 		$plugin_admin = new Admin( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+
 	}
 
 	/**
@@ -210,19 +235,4 @@ class CLI {
 		return $this->version;
 	}
 
-	/**
-	 * Inititialize the license.
-	 *
-	 * @return void
-	 */
-	public function init_license() {
-		$object    = new Settings();
-		$settings  = $object->get();
-		$connected = isset( $settings['account']['connected'] ) && true === $settings['account']['connected'] ? true : false;
-		if ( true === $connected ) {
-			define( 'CKY_CLOUD_REQUEST', true );
-		} else {
-			define( 'CKY_CLOUD_REQUEST', false );
-		}
-	}
 }

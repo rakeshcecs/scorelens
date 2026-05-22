@@ -10,6 +10,7 @@
 namespace CookieYes\Lite\Admin\Modules\Banners\Includes;
 
 use CookieYes\Lite\Includes\Base_Controller;
+use CookieYes\Lite\Includes\Cache;
 
 use stdClass;
 
@@ -291,6 +292,12 @@ class Controller extends Base_Controller {
 		$banner->set_name( 'CCPA' );
 		$banner->set_settings( self::get_default_configs( 'ccpa' ) );
 		$banner->save();
+
+		// Stored banner HTML (in the `cky_banner_template` option) outlives
+		// its source rows when the DB is wiped manually; drop it so the next
+		// front-end request regenerates against the freshly-seeded banners.
+		delete_option( 'cky_banner_template' );
+		Cache::delete( 'banner_template' );
 	}
 
 	/**

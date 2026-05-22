@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Cookie Policy Block 1 Content
  *
@@ -6,10 +11,6 @@
  *
  * @package Cookie_Law_Info
  */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 
 // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 ?>
