@@ -80,9 +80,9 @@ get_header();
 <main class="sl-analysis-page" id="sl-primary">
   
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
-    <span class="breadcrumb-sep">&rsaquo;</span>
-    <span>How to Analyze SSC Mock Tests Effectively</span>
+    <a class="breadcrumb-home" href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
+    <span class="breadcrumb-sep" aria-hidden="true">&rsaquo;</span>
+    <span class="breadcrumb-current">How to Analyze SSC Mock Tests Effectively</span>
   </nav>
 
 
@@ -541,4 +541,3 @@ get_header();
 
 <?php
 get_footer();
-
