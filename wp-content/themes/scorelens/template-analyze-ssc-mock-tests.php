@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'wp_head', function () {
 	$page_url = get_permalink();
 	?>
+	<?php if ( false ) : ?>
 	<script type="application/ld+json">
 	<?php
 	echo wp_json_encode( [
@@ -29,6 +30,7 @@ add_action( 'wp_head', function () {
 	], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	?>
 	</script>
+	<?php endif; ?>
 	<script type="application/ld+json">
 	<?php
 	$faqs = [
@@ -55,6 +57,7 @@ add_action( 'wp_head', function () {
 	], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	?>
 	</script>
+	<?php if ( false ) : ?>
 	<script type="application/ld+json">
 	<?php
 	echo wp_json_encode( [
@@ -67,6 +70,7 @@ add_action( 'wp_head', function () {
 	], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	?>
 	</script>
+	<?php endif; ?>
 	<?php
 }, 2 );
 
@@ -537,5 +541,4 @@ get_header();
 
 <?php
 get_footer();
-
 

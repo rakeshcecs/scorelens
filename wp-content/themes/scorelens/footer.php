@@ -1,4 +1,5 @@
 <!-- ════════════ CTA BLOCK ════════════ -->
+<?php if ( is_front_page() ) : ?>
 <div class="sl-cta-block" id="sl-cta">
 	<h2>
 		<?php esc_html_e( 'Stop guessing.', 'scorelens' ); ?>
@@ -12,6 +13,7 @@
 		<span><?php esc_html_e( 'Take your free mock →', 'scorelens' ); ?></span>
 	</a>
 </div>
+<?php endif; ?>
 
 <!-- ════════════ SITE FOOTER ════════════ -->
 <footer class="sl-site-footer" role="contentinfo">
