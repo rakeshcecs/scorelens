@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ─────────────────────────────────────────────
  * Constants
  * ───────────────────────────────────────────── */
-define( 'SCORELENS_VERSION', '2.1.2' );
+define( 'SCORELENS_VERSION', '2.1.3' );
 define( 'SCORELENS_DIR',     get_template_directory() );
 define( 'SCORELENS_URI',     get_template_directory_uri() );
 
@@ -89,8 +89,29 @@ function scorelens_enqueue_assets() {
 		SCORELENS_VERSION,
 		[ 'strategy' => 'defer', 'in_footer' => true ]
 	);
+
+	// if ( scorelens_is_analysis_mock_tests_page() ) {
+		wp_enqueue_style(
+			'scorelens-analysis',
+			SCORELENS_URI . '/assets/css/scorelens-analysis.css',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION
+		);
+
+		wp_enqueue_script(
+			'scorelens-analysis',
+			SCORELENS_URI . '/assets/js/scorelens-analysis.js',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION,
+			[ 'strategy' => 'defer', 'in_footer' => true ]
+		);
+	//}
 }
 add_action( 'wp_enqueue_scripts', 'scorelens_enqueue_assets' );
+
+function scorelens_is_analysis_mock_tests_page() {
+	return is_page_template( 'template-analyze-ssc-mock-tests.php' );
+}
 
 /* ─────────────────────────────────────────────
  * Resource Hints — preconnect for Google Fonts
