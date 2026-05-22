@@ -90,7 +90,7 @@ function scorelens_enqueue_assets() {
 		[ 'strategy' => 'defer', 'in_footer' => true ]
 	);
 
-	// if ( scorelens_is_analysis_mock_tests_page() ) {
+	if ( scorelens_is_analysis_mock_tests_page() ) {
 		wp_enqueue_style(
 			'scorelens-analysis',
 			SCORELENS_URI . '/assets/css/scorelens-analysis.css',
@@ -105,12 +105,33 @@ function scorelens_enqueue_assets() {
 			SCORELENS_VERSION,
 			[ 'strategy' => 'defer', 'in_footer' => true ]
 		);
-	//}
+	}
+
+	if ( scorelens_is_improve_mock_score_page() ) {
+		wp_enqueue_style(
+			'scorelens-improve',
+			SCORELENS_URI . '/assets/css/scorelens-improve.css',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION
+		);
+
+		wp_enqueue_script(
+			'scorelens-improve',
+			SCORELENS_URI . '/assets/js/scorelens-improve.js',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION,
+			[ 'strategy' => 'defer', 'in_footer' => true ]
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'scorelens_enqueue_assets' );
 
 function scorelens_is_analysis_mock_tests_page() {
 	return is_page_template( 'template-analyze-ssc-mock-tests.php' );
+}
+
+function scorelens_is_improve_mock_score_page() {
+	return is_page_template( 'template-improve-ssc-mock-test-score.php' );
 }
 
 /* ─────────────────────────────────────────────
