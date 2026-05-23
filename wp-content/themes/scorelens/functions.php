@@ -140,6 +140,23 @@ function scorelens_enqueue_assets() {
 			[ 'strategy' => 'defer', 'in_footer' => true ]
 		);
 	}
+
+	if ( scorelens_is_accuracy_page() ) {
+		wp_enqueue_style(
+			'scorelens-accuracy',
+			SCORELENS_URI . '/assets/css/scorelens-accuracy.css',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION
+		);
+
+		wp_enqueue_script(
+			'scorelens-accuracy',
+			SCORELENS_URI . '/assets/js/scorelens-accuracy.js',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION,
+			[ 'strategy' => 'defer', 'in_footer' => true ]
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'scorelens_enqueue_assets' );
 
@@ -153,6 +170,10 @@ function scorelens_is_improve_mock_score_page() {
 
 function scorelens_is_weak_topics_page() {
 	return is_page_template( 'template-ssc-weak-topic-analysis.php' );
+}
+
+function scorelens_is_accuracy_page() {
+	return is_page_template( 'template-improve-accuracy-ssc-exams.php' );
 }
 
 /* ─────────────────────────────────────────────
