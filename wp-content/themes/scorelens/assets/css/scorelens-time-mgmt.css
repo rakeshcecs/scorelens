@@ -1,0 +1,383 @@
+/* Page-specific styles for the SSC Time Management Strategy template. */
+.sl-time-mgmt-page {
+  --bg: var(--sl-bg);
+  --bg-2: var(--sl-bg-2);
+  --surface: var(--sl-surface);
+  --ink: var(--sl-ink);
+  --ink-soft: var(--sl-ink-soft);
+  --muted: var(--sl-muted);
+  --rule: var(--sl-rule);
+  --brand: var(--sl-brand);
+  --accent: var(--sl-accent);
+  --accent-2: var(--sl-accent-2);
+  --danger: var(--sl-danger);
+  --card: var(--sl-card);
+  --shadow: var(--sl-shadow);
+  --max-w: var(--sl-max-w);
+  --px: var(--sl-container-px);
+  --r-sm: var(--sl-radius-sm);
+  --r-md: var(--sl-radius-md);
+  --r-lg: var(--sl-radius-lg);
+  --r-xl: var(--sl-radius-xl);
+  --r-pill: var(--sl-radius-pill);
+  --sans: var(--sl-font-sans);
+  --serif: var(--sl-font-serif);
+  --mono: var(--sl-font-mono);
+  --ease: var(--sl-ease-spring);
+}
+
+/* ── BUTTONS ── */
+.sl-time-mgmt-page .btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;border-radius:var(--r-pill);border:1.5px solid transparent;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;min-height:44px}
+.sl-time-mgmt-page .btn-ghost{color:var(--ink);border-color:var(--rule);background:transparent}
+.sl-time-mgmt-page .btn-ghost:hover{border-color:var(--ink)}
+.sl-time-mgmt-page .btn-primary{background:var(--brand);color:var(--bg-2);border-color:var(--brand);position:relative;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s}
+.sl-time-mgmt-page .btn-primary::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(100px circle at var(--bx,50%) var(--by,50%),color-mix(in srgb,var(--accent) 80%,transparent),transparent 70%);opacity:0;transition:opacity .3s}
+.sl-time-mgmt-page .btn-primary:hover::before,.sl-time-mgmt-page .btn-primary:focus-visible::before{opacity:1}
+.sl-time-mgmt-page .btn-primary span{position:relative;z-index:1}
+.sl-time-mgmt-page .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 30px -10px rgba(28,53,83,.4)}
+[data-theme="dark"] .sl-time-mgmt-page .btn-primary{background:var(--accent);color:#1c3553;border-color:var(--accent)}
+[data-theme="dark"] .sl-time-mgmt-page .btn-primary:hover{box-shadow:0 10px 30px -10px rgba(244,185,66,.5)}
+.sl-time-mgmt-page .btn-lg{padding:14px 28px;font-size:15px}
+
+/* ── SECTION BASE ── */
+.sl-time-mgmt-page .section{max-width:var(--max-w);margin:0 auto;padding:var(--space-2xl) var(--px)}
+.sl-time-mgmt-page .alt-section{background:color-mix(in srgb,var(--brand) 3%,transparent);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+[data-theme="dark"] .sl-time-mgmt-page .alt-section{background:color-mix(in srgb,var(--accent) 4%,transparent)}
+.sl-time-mgmt-page .section-label{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .section-label::before{content:"";width:24px;height:1px;background:var(--muted)}
+.sl-time-mgmt-page .section-h{font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.05;letter-spacing:-.03em;max-width:820px;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .section-h .serif,.sl-time-mgmt-page .serif{font-family:var(--serif);font-weight:400;font-style:italic}
+.sl-time-mgmt-page .section-lede{font-size:17px;color:var(--ink-soft);max-width:640px;line-height:1.55;margin-bottom:60px}
+.sl-time-mgmt-page .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--rule);font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-2) 20%,transparent);animation:tm-pulse 2s infinite;flex-shrink:0}
+@keyframes tm-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── FOLD 1 — HERO ── */
+.sl-time-mgmt-page .hero{padding:60px var(--px) 40px;max-width:var(--max-w);margin:0 auto}
+.sl-time-mgmt-page .hero-inner{display:grid;grid-template-columns:1.1fr 1fr;gap:64px;align-items:center}
+.sl-time-mgmt-page .hero-h{font-size:clamp(36px,4.8vw,60px);font-weight:700;line-height:1.03;letter-spacing:-.035em;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .hero-lede{font-size:17px;line-height:1.55;color:var(--ink-soft);max-width:520px;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+
+/* Timer dashboard visual */
+.sl-time-mgmt-page .timer-dash{background:#0a1526;border:1px solid #2a4870;border-radius:24px;padding:28px;position:relative;overflow:hidden}
+.sl-time-mgmt-page .timer-dash::before{content:"";position:absolute;top:-50px;left:-50px;width:180px;height:180px;background:radial-gradient(circle,rgba(244,185,66,.3) 0%,transparent 70%);pointer-events:none}
+.sl-time-mgmt-page .td-label{font-family:var(--mono);font-size:10px;color:#7d8aa3;letter-spacing:.12em;text-transform:uppercase;margin-bottom:var(--space-md)}
+
+/* Big countdown clock */
+.sl-time-mgmt-page .td-clock{display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .td-clock-inner{text-align:center}
+.sl-time-mgmt-page .td-clock-time{font-family:var(--mono);font-size:52px;font-weight:700;color:#f6f5f1;letter-spacing:.04em;line-height:1;font-variant-numeric:tabular-nums}
+.sl-time-mgmt-page .td-clock-time span{color:var(--accent)}
+.sl-time-mgmt-page .td-clock-sublabel{font-family:var(--mono);font-size:10px;color:#7d8aa3;letter-spacing:.12em;text-transform:uppercase;margin-top:6px}
+
+/* Section time rings */
+.sl-time-mgmt-page .td-sections{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .td-section{padding:12px 14px;border-radius:12px;border:1px solid #2a4870;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.sl-time-mgmt-page .td-section:hover{border-color:rgba(244,185,66,.4)}
+.sl-time-mgmt-page .td-section-arc{position:relative;width:36px;height:36px;flex-shrink:0}
+.sl-time-mgmt-page .td-section-arc svg{width:36px;height:36px}
+.sl-time-mgmt-page .td-arc-track{fill:none;stroke:#1a2d4a;stroke-width:4;stroke-linecap:round}
+.sl-time-mgmt-page .td-arc-fill{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:91;stroke-dashoffset:var(--arc-offset);transform:rotate(-90deg);transform-origin:50% 50%;animation:tm-arcDraw 1.2s var(--ease) both}
+.sl-time-mgmt-page .td-arc-fill--green{stroke:#10b981}
+.sl-time-mgmt-page .td-arc-fill--orange{stroke:#ff7a52}
+.sl-time-mgmt-page .td-arc-fill--yellow{stroke:#f4b942}
+.sl-time-mgmt-page .td-arc-fill--grey{stroke:#c4cddb}
+@keyframes tm-arcDraw{from{stroke-dashoffset:91}}
+.sl-time-mgmt-page .td-section-info{flex:1;min-width:0}
+.sl-time-mgmt-page .td-section-name{font-size:11px;font-weight:600;color:#f6f5f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-time-mgmt-page .td-section-time{font-family:var(--mono);font-size:13px;font-weight:700;margin-top:2px}
+.sl-time-mgmt-page .td-section-time--green{color:#10b981}
+.sl-time-mgmt-page .td-section-time--orange{color:#ff7a52}
+.sl-time-mgmt-page .td-section-time--yellow{color:#f4b942}
+.sl-time-mgmt-page .td-section-time--grey{color:#c4cddb}
+.sl-time-mgmt-page .td-clock-note{padding:12px 14px;border-radius:10px;background:rgba(244,185,66,.1);border-left:3px solid var(--accent);font-size:12px;line-height:1.5;color:#e4dcc5}
+.sl-time-mgmt-page .td-clock-note strong{color:var(--accent);font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* ── FOLD 2 — WHY IT'S CRITICAL ── */
+.sl-time-mgmt-page .why-time-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.sl-time-mgmt-page .why-copy h3{font-size:clamp(24px,3.2vw,36px);font-weight:700;line-height:1.1;letter-spacing:-.025em;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .why-copy p{font-size:15px;color:var(--ink-soft);line-height:1.6;margin-bottom:var(--space-sm)}
+.sl-time-mgmt-page .why-lists{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-top:var(--space-md)}
+.sl-time-mgmt-page .wl-col h4{font-size:13px;font-weight:700;margin-bottom:var(--space-sm);display:flex;align-items:center;gap:8px}
+.sl-time-mgmt-page .wl-col h4 svg{width:15px;height:15px;flex-shrink:0}
+.sl-time-mgmt-page .wl-col.bad h4{color:var(--danger)}
+.sl-time-mgmt-page .wl-col.good h4{color:var(--accent-2)}
+.sl-time-mgmt-page .wl-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.sl-time-mgmt-page .wl-list li{font-size:13px;color:var(--ink-soft);line-height:1.4;padding:6px 0;border-bottom:1px dashed var(--rule);display:flex;align-items:flex-start;gap:8px}
+.sl-time-mgmt-page .wl-list li:last-child{border-bottom:none}
+.sl-time-mgmt-page .bad .wl-list li::before{content:"\2717";color:var(--danger);font-weight:700;flex-shrink:0}
+.sl-time-mgmt-page .good .wl-list li::before{content:"\2713";color:var(--accent-2);font-weight:700;flex-shrink:0}
+
+/* Before/After time impact card */
+.sl-time-mgmt-page .time-impact-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-xl);padding:28px;display:flex;flex-direction:column;gap:var(--space-md)}
+.sl-time-mgmt-page .tic-title{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.sl-time-mgmt-page .tic-scenario{padding:20px;border-radius:var(--r-lg);border:1px solid var(--rule)}
+.sl-time-mgmt-page .tic-scenario.bad{background:color-mix(in srgb,var(--danger) 4%,transparent);border-color:color-mix(in srgb,var(--danger) 18%,var(--rule))}
+.sl-time-mgmt-page .tic-scenario.good{background:color-mix(in srgb,var(--accent-2) 4%,transparent);border-color:color-mix(in srgb,var(--accent-2) 18%,var(--rule))}
+[data-theme="dark"] .sl-time-mgmt-page .tic-scenario.bad{background:color-mix(in srgb,var(--danger) 8%,#1c3553)}
+[data-theme="dark"] .sl-time-mgmt-page .tic-scenario.good{background:color-mix(in srgb,var(--accent-2) 8%,#1c3553)}
+.sl-time-mgmt-page .tic-head{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sl-time-mgmt-page .bad .tic-head{color:var(--danger)}
+.sl-time-mgmt-page .good .tic-head{color:var(--accent-2)}
+.sl-time-mgmt-page .tic-head svg{width:16px;height:16px;flex-shrink:0}
+.sl-time-mgmt-page .tic-rows{display:flex;flex-direction:column;gap:8px}
+.sl-time-mgmt-page .tic-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--rule)}
+.sl-time-mgmt-page .tic-row:last-child{border-bottom:none}
+.sl-time-mgmt-page .tic-row-label{color:var(--ink-soft)}
+.sl-time-mgmt-page .bad .tic-row-val{color:var(--danger);font-weight:700}
+.sl-time-mgmt-page .good .tic-row-val{color:var(--accent-2);font-weight:700}
+.sl-time-mgmt-page .tic-row--total{border-top:1px solid var(--rule);padding-top:8px}
+.sl-time-mgmt-page .tic-row--total .tic-row-label{font-weight:700}
+.sl-time-mgmt-page .tic-row--total .tic-row-val{font-size:18px}
+
+/* ── FOLD 3 — COMMON MISTAKES ── */
+.sl-time-mgmt-page .mistakes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)}
+.sl-time-mgmt-page .mistake-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:26px 22px;position:relative;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s,border-color .3s}
+.sl-time-mgmt-page .mistake-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--danger) 35%,var(--rule))}
+.sl-time-mgmt-page .mistake-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--danger),#ff7a52)}
+.sl-time-mgmt-page .mistake-card>*{position:relative;z-index:1}
+.sl-time-mgmt-page .mistake-time-lost{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--danger);letter-spacing:.06em;text-transform:uppercase;margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px}
+.sl-time-mgmt-page .mistake-time-lost::before{content:"\23F1";font-size:12px}
+.sl-time-mgmt-page .mistake-card h3{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+.sl-time-mgmt-page .mistake-card p{font-size:14px;line-height:1.55;color:var(--ink-soft)}
+
+/* ── FOLD 4 — SECTION TIME ALLOCATION ── */
+.sl-time-mgmt-page .alloc-wrap{display:grid;grid-template-columns:280px 1fr;gap:60px;align-items:start}
+
+/* Donut chart */
+.sl-time-mgmt-page .donut-wrap{display:flex;flex-direction:column;align-items:center;gap:var(--space-md)}
+.sl-time-mgmt-page .donut-svg-wrap{position:relative;width:220px;height:220px}
+.sl-time-mgmt-page .donut-svg{width:220px;height:220px;transform:rotate(-90deg)}
+.sl-time-mgmt-page .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sl-time-mgmt-page .donut-center-val{font-size:36px;font-weight:700;color:var(--ink);letter-spacing:-.03em;line-height:1}
+.sl-time-mgmt-page .donut-center-lbl{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px}
+.sl-time-mgmt-page .donut-legend{display:flex;flex-direction:column;gap:8px;width:100%}
+.sl-time-mgmt-page .donut-leg-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+.sl-time-mgmt-page .donut-leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.sl-time-mgmt-page .donut-leg-dot--green{background:#10b981}
+.sl-time-mgmt-page .donut-leg-dot--orange{background:#ff7a52}
+.sl-time-mgmt-page .donut-leg-dot--yellow{background:#f4b942}
+.sl-time-mgmt-page .donut-leg-dot--grey{background:#7d8aa3}
+.sl-time-mgmt-page .donut-leg-name{flex:1}
+.sl-time-mgmt-page .donut-leg-time{font-weight:700;font-family:var(--mono);font-size:12px}
+.sl-time-mgmt-page .donut-leg-time--green{color:#10b981}
+.sl-time-mgmt-page .donut-leg-time--orange{color:#ff7a52}
+.sl-time-mgmt-page .donut-leg-time--yellow{color:#f4b942}
+.sl-time-mgmt-page .donut-leg-time--grey{color:#7d8aa3}
+
+/* Section allocation cards */
+.sl-time-mgmt-page .alloc-cards{display:flex;flex-direction:column;gap:var(--space-md)}
+.sl-time-mgmt-page .alloc-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:22px 24px;display:grid;grid-template-columns:auto 1fr auto;gap:var(--space-md);align-items:center;transition:transform .3s,box-shadow .3s,border-color .3s}
+.sl-time-mgmt-page .alloc-card:hover{transform:translateX(4px);box-shadow:var(--shadow);border-color:var(--brand)}
+[data-theme="dark"] .sl-time-mgmt-page .alloc-card:hover{border-color:var(--accent)}
+.sl-time-mgmt-page .alloc-card-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.sl-time-mgmt-page .alloc-card-dot--green{background:#10b981}
+.sl-time-mgmt-page .alloc-card-dot--orange{background:#ff7a52}
+.sl-time-mgmt-page .alloc-card-dot--yellow{background:#f4b942}
+.sl-time-mgmt-page .alloc-card-dot--grey{background:#7d8aa3}
+.sl-time-mgmt-page .alloc-card-name{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:4px}
+.sl-time-mgmt-page .alloc-card-tip{font-size:13px;color:var(--ink-soft);line-height:1.4}
+.sl-time-mgmt-page .alloc-card-time{text-align:right;flex-shrink:0}
+.sl-time-mgmt-page .alloc-card-range{font-family:var(--mono);font-size:16px;font-weight:700;white-space:nowrap}
+.sl-time-mgmt-page .alloc-card-range--green{color:#10b981}
+.sl-time-mgmt-page .alloc-card-range--orange{color:#ff7a52}
+.sl-time-mgmt-page .alloc-card-range--yellow{color:#f4b942}
+.sl-time-mgmt-page .alloc-card-range--grey{color:#c4cddb}
+.sl-time-mgmt-page .alloc-card-sublabel{font-size:11px;color:var(--muted);margin-top:2px;text-align:right}
+.sl-time-mgmt-page .alloc-note{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:20px 24px;border-left:3px solid var(--accent);margin-top:var(--space-md)}
+.sl-time-mgmt-page .alloc-note p{font-size:14px;color:var(--ink-soft);line-height:1.6}
+.sl-time-mgmt-page .alloc-note strong{color:var(--accent)}
+
+/* ── FOLD 5 — STEP-BY-STEP (card grid with icons) ── */
+.sl-time-mgmt-page .steps-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)}
+.sl-time-mgmt-page .step-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:28px 24px;position:relative;overflow:hidden;transition:transform .4s var(--ease),box-shadow .4s,border-color .3s}
+.sl-time-mgmt-page .step-card::before{content:"";position:absolute;inset:0;border-radius:var(--r-lg);opacity:0;background:radial-gradient(400px circle at var(--fx,50%) var(--fy,50%),color-mix(in srgb,var(--accent) 14%,transparent) 0%,transparent 60%);transition:opacity .4s;pointer-events:none}
+.sl-time-mgmt-page .step-card:hover::before{opacity:1}
+.sl-time-mgmt-page .step-card:hover{box-shadow:var(--shadow);border-color:var(--accent);transform:translateY(-4px)}
+.sl-time-mgmt-page .step-card>*{position:relative;z-index:1}
+.sl-time-mgmt-page .step-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .step-card-num{font-family:var(--serif);font-style:italic;font-size:52px;font-weight:400;line-height:1;color:color-mix(in srgb,var(--accent) 35%,transparent)}
+.sl-time-mgmt-page .step-card-icon{width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sl-time-mgmt-page .step-card-icon svg{width:18px;height:18px}
+.sl-time-mgmt-page .step-card h4{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+.sl-time-mgmt-page .step-card p{font-size:14px;line-height:1.55;color:var(--ink-soft)}
+
+/* ── FOLD 6 — SPEED WITHOUT ACCURACY LOSS ── */
+.sl-time-mgmt-page .speed-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.sl-time-mgmt-page .speed-copy h3{font-size:clamp(24px,3.2vw,36px);font-weight:700;line-height:1.1;letter-spacing:-.025em;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .speed-copy p{font-size:15px;color:var(--ink-soft);line-height:1.6;margin-bottom:var(--space-sm)}
+.sl-time-mgmt-page .speed-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:var(--space-md)}
+.sl-time-mgmt-page .speed-list li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-md);font-size:14px;line-height:1.45;color:var(--ink-soft);transition:border-color .2s,transform .2s}
+.sl-time-mgmt-page .speed-list li:hover{border-color:var(--accent);transform:translateX(4px)}
+.sl-time-mgmt-page .speed-list li::before{content:"\2192";color:var(--accent);font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* Speed vs accuracy quadrant */
+.sl-time-mgmt-page .quadrant-wrap{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-xl);padding:28px}
+.sl-time-mgmt-page .qw-title{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .qw-axis-y{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em;margin-bottom:var(--space-sm);text-align:center}
+.sl-time-mgmt-page .quadrant{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .quad-cell{padding:20px 16px;border-radius:var(--r-lg);border:1px solid var(--rule);text-align:center;transition:transform .2s}
+.sl-time-mgmt-page .quad-cell:hover{transform:scale(1.02)}
+.sl-time-mgmt-page .quad-cell.tl{background:color-mix(in srgb,var(--danger) 5%,transparent);border-color:color-mix(in srgb,var(--danger) 18%,var(--rule))}
+.sl-time-mgmt-page .quad-cell.tr{background:color-mix(in srgb,var(--accent-2) 5%,transparent);border-color:color-mix(in srgb,var(--accent-2) 18%,var(--rule))}
+.sl-time-mgmt-page .quad-cell.bl{background:color-mix(in srgb,var(--danger) 4%,transparent);border-color:color-mix(in srgb,var(--danger) 12%,var(--rule))}
+.sl-time-mgmt-page .quad-cell.br{background:color-mix(in srgb,var(--accent) 5%,transparent);border-color:color-mix(in srgb,var(--accent) 18%,var(--rule))}
+.sl-time-mgmt-page .quad-emoji{font-size:24px;margin-bottom:6px}
+.sl-time-mgmt-page .quad-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.sl-time-mgmt-page .tl .quad-title,.sl-time-mgmt-page .bl .quad-title{color:var(--danger)}
+.sl-time-mgmt-page .tr .quad-title{color:var(--accent-2)}
+.sl-time-mgmt-page .br .quad-title{color:var(--accent)}
+.sl-time-mgmt-page .quad-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.sl-time-mgmt-page .quad-axis-x{text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em}
+.sl-time-mgmt-page .quad-note{padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--accent-2) 8%,transparent);border-left:3px solid var(--accent-2);font-size:13px;color:var(--ink-soft);line-height:1.55;margin-top:var(--space-md)}
+.sl-time-mgmt-page .quad-note strong{display:block;color:var(--accent-2);font-size:11px;font-weight:700;margin-bottom:4px}
+
+/* ── FOLD 7 — AI ANALYTICS ── */
+.sl-time-mgmt-page .ai-section{background:var(--brand);color:#f6f5f1;border-radius:var(--r-xl);padding:80px 60px;margin:var(--space-xl) 0;position:relative;overflow:hidden}
+[data-theme="dark"] .sl-time-mgmt-page .ai-section{background:#0a1526;border:1px solid var(--rule)}
+.sl-time-mgmt-page .ai-section::before{content:"";position:absolute;top:-150px;right:-150px;width:500px;height:500px;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 25%,transparent) 0%,transparent 65%);pointer-events:none}
+.sl-time-mgmt-page .ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative}
+.sl-time-mgmt-page .ai-copy h2{font-size:clamp(28px,4vw,44px);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .ai-copy h2 .serif{color:var(--accent)}
+.sl-time-mgmt-page .ai-copy p{color:#c4cddb;line-height:1.6;margin-bottom:var(--space-sm);font-size:15px;max-width:460px}
+.sl-time-mgmt-page .ai-copy .badge{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#c4cddb}
+.sl-time-mgmt-page .ai-points{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:var(--space-md)}
+.sl-time-mgmt-page .ai-points li{display:flex;align-items:center;gap:10px;font-size:14px;color:#c4cddb;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04)}
+.sl-time-mgmt-page .ai-points li::before{content:"\2192";color:var(--accent);font-weight:700;flex-shrink:0}
+
+/* AI time analytics panel */
+.sl-time-mgmt-page .ai-time-panel{background:#0a1526;border:1px solid #2a4870;border-radius:18px;padding:24px}
+.sl-time-mgmt-page .atp-title{font-family:var(--mono);font-size:10px;color:#7d8aa3;letter-spacing:.12em;text-transform:uppercase;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .atp-section-rows{display:flex;flex-direction:column;gap:12px;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .atp-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #2a4870}
+.sl-time-mgmt-page .atp-row-name{font-size:13px;color:#f6f5f1;font-weight:500}
+.sl-time-mgmt-page .atp-row-time{font-family:var(--mono);font-size:12px;font-weight:700;text-align:right}
+.sl-time-mgmt-page .atp-row-flag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:var(--r-pill);text-align:center;letter-spacing:.04em;white-space:nowrap}
+.sl-time-mgmt-page .atp-row.on-time{border-color:rgba(16,185,129,.2)}
+.sl-time-mgmt-page .atp-row.on-time .atp-row-time{color:#10b981}
+.sl-time-mgmt-page .atp-row.on-time .atp-row-flag{background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.22)}
+.sl-time-mgmt-page .atp-row.over{border-color:rgba(255,122,82,.25)}
+.sl-time-mgmt-page .atp-row.over .atp-row-time{color:#ff7a52}
+.sl-time-mgmt-page .atp-row.over .atp-row-flag{background:rgba(255,122,82,.12);color:#ff7a52;border:1px solid rgba(255,122,82,.22)}
+.sl-time-mgmt-page .atp-row.fast{border-color:rgba(196,205,219,.12)}
+.sl-time-mgmt-page .atp-row.fast .atp-row-time{color:#c4cddb}
+.sl-time-mgmt-page .atp-row.fast .atp-row-flag{background:rgba(196,205,219,.08);color:#c4cddb;border:1px solid rgba(196,205,219,.14)}
+.sl-time-mgmt-page .atp-insight{padding:14px 16px;border-radius:10px;background:rgba(244,185,66,.1);border-left:3px solid var(--accent);font-size:12px;line-height:1.55;color:#e4dcc5}
+.sl-time-mgmt-page .atp-insight strong{color:var(--accent);font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* ── FOLD 8 — SAMPLE ANALYSIS ── */
+.sl-time-mgmt-page .sample-dash{background:#0a1526;border:1px solid #2a4870;border-radius:var(--r-xl);padding:36px;overflow:hidden}
+.sl-time-mgmt-page .sd-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-lg);padding-bottom:var(--space-md);border-bottom:1px solid #2a4870}
+.sl-time-mgmt-page .sd-meta{font-family:var(--mono);font-size:11px;color:#7d8aa3;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.sl-time-mgmt-page .sd-title{font-size:16px;color:#f6f5f1;font-weight:600}
+.sl-time-mgmt-page .sd-total-time{text-align:right}
+.sl-time-mgmt-page .sd-total-val{font-size:36px;font-weight:700;color:#f6f5f1;letter-spacing:-.03em;line-height:1}
+.sl-time-mgmt-page .sd-total-lbl{font-family:var(--mono);font-size:11px;color:#7d8aa3;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+
+/* Section analysis bars */
+.sl-time-mgmt-page .sd-section-label{font-family:var(--mono);font-size:10px;color:#7d8aa3;letter-spacing:.1em;text-transform:uppercase;margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .sd-section-rows{display:flex;flex-direction:column;gap:14px;margin-bottom:var(--space-xl)}
+.sl-time-mgmt-page .sd-section-row{display:grid;grid-template-columns:160px 1fr 60px 80px;gap:14px;align-items:center}
+.sl-time-mgmt-page .sd-sname{font-size:13px;color:#f6f5f1;font-weight:500}
+.sl-time-mgmt-page .sd-bar-wrap{position:relative}
+.sl-time-mgmt-page .sd-bar-track{height:12px;background:#1a2d4a;border-radius:var(--r-pill);overflow:hidden}
+.sl-time-mgmt-page .sd-bar-fill{height:100%;border-radius:var(--r-pill);position:relative;animation:tm-growBar 1.4s var(--ease) both}
+@keyframes tm-growBar{from{width:0 !important}}
+.sl-time-mgmt-page .sd-bar-fill--green{background:#10b981}
+.sl-time-mgmt-page .sd-bar-fill--orange{background:#ff7a52}
+.sl-time-mgmt-page .sd-bar-fill--yellow{background:#f4b942}
+.sl-time-mgmt-page .sd-bar-fill--grey{background:#c4cddb}
+.sl-time-mgmt-page .sd-bar-fill--w23{width:23%}
+.sl-time-mgmt-page .sd-bar-fill--w35{width:35%}
+.sl-time-mgmt-page .sd-bar-fill--w52{width:52%}
+.sl-time-mgmt-page .sd-bar-fill--w100{width:100%}
+.sl-time-mgmt-page .sd-bar-fill--d1{animation-delay:.1s}
+.sl-time-mgmt-page .sd-bar-fill--d3{animation-delay:.3s}
+.sl-time-mgmt-page .sd-bar-fill--d5{animation-delay:.5s}
+.sl-time-mgmt-page .sd-bar-fill--d7{animation-delay:.7s}
+.sl-time-mgmt-page .sd-bar-target{position:absolute;top:-4px;height:20px;width:2px;background:#7d8aa3;border-radius:1px}
+.sl-time-mgmt-page .sd-time{font-family:var(--mono);font-size:13px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.sl-time-mgmt-page .sd-time--green{color:#10b981}
+.sl-time-mgmt-page .sd-time--orange{color:#ff7a52}
+.sl-time-mgmt-page .sd-time--yellow{color:#f4b942}
+.sl-time-mgmt-page .sd-time--grey{color:#c4cddb}
+.sl-time-mgmt-page .sd-acc{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right}
+.sl-time-mgmt-page .sd-acc--green{color:#10b981}
+.sl-time-mgmt-page .sd-acc--yellow{color:#f4b942}
+.sl-time-mgmt-page .sd-row-flags{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.sl-time-mgmt-page .sd-flag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--r-pill);letter-spacing:.04em}
+.sl-time-mgmt-page .flag-over{background:rgba(255,122,82,.14);color:#ff7a52;border:1px solid rgba(255,122,82,.25)}
+.sl-time-mgmt-page .flag-ok{background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.2)}
+.sl-time-mgmt-page .flag-fast{background:rgba(196,205,219,.08);color:#c4cddb;border:1px solid rgba(196,205,219,.14)}
+
+.sl-time-mgmt-page .sd-summary{padding:18px 20px;border-radius:12px;background:rgba(244,185,66,.1);border-left:3px solid var(--accent);font-size:13px;line-height:1.6;color:#e4dcc5}
+.sl-time-mgmt-page .sd-summary strong{color:var(--accent);display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+
+/* ── FAQ ── */
+.sl-time-mgmt-page .faq-list{max-width:720px}
+.sl-time-mgmt-page .faq-item{border-bottom:1px solid var(--rule)}
+.sl-time-mgmt-page .faq-item:first-child{border-top:1px solid var(--rule)}
+.sl-time-mgmt-page .faq-trigger{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:var(--space-md) 0;display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);font-family:var(--sans);font-size:16px;font-weight:600;color:var(--ink);line-height:1.4;min-height:44px}
+.sl-time-mgmt-page .faq-icon{width:20px;height:20px;flex-shrink:0;color:var(--muted);transition:transform .3s var(--ease),color .2s}
+.sl-time-mgmt-page .faq-item.open .faq-icon{transform:rotate(45deg);color:var(--brand)}
+[data-theme="dark"] .sl-time-mgmt-page .faq-item.open .faq-icon{color:var(--accent)}
+.sl-time-mgmt-page .faq-body{overflow:hidden;max-height:0;transition:max-height .35s var(--ease)}
+.sl-time-mgmt-page .faq-body p{font-size:15px;color:var(--ink-soft);line-height:1.65;padding-bottom:var(--space-md)}
+
+/* ── INTERNAL LINKS ── */
+.sl-time-mgmt-page .related-block{margin-top:var(--space-xl)}
+.sl-time-mgmt-page .related-label{margin-bottom:var(--space-md)}
+.sl-time-mgmt-page .internal-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:var(--space-lg)}
+.sl-time-mgmt-page .int-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--rule);border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--ink-soft);background:var(--card);transition:all .2s}
+.sl-time-mgmt-page .int-link:hover{color:var(--brand);border-color:var(--brand)}
+[data-theme="dark"] .sl-time-mgmt-page .int-link:hover{color:var(--accent);border-color:var(--accent)}
+.sl-time-mgmt-page .int-link svg{width:14px;height:14px;opacity:.6}
+
+/* ── CTA BLOCK ── */
+.sl-time-mgmt-page .cta-block{text-align:center;padding:140px var(--px);background:color-mix(in srgb,var(--brand) 4%,transparent);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+[data-theme="dark"] .sl-time-mgmt-page .cta-block{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.sl-time-mgmt-page .cta-block h2{font-size:clamp(34px,5.5vw,60px);font-weight:700;line-height:1.05;letter-spacing:-.03em;max-width:820px;margin:0 auto var(--space-md)}
+.sl-time-mgmt-page .cta-block p{font-size:17px;color:var(--ink-soft);max-width:520px;margin:0 auto var(--space-lg)}
+.sl-time-mgmt-page .cta-btns{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+
+/* ── ANIMATIONS ── */
+@keyframes tm-fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.sl-time-mgmt-page .fade{animation:tm-fadeUp .8s var(--ease) both}
+.sl-time-mgmt-page .d1{animation-delay:.1s}
+.sl-time-mgmt-page .d2{animation-delay:.25s}
+.sl-time-mgmt-page .d3{animation-delay:.4s}
+.sl-time-mgmt-page .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.sl-time-mgmt-page .reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .sl-time-mgmt-page{--px:32px}
+  .sl-time-mgmt-page .alloc-wrap{grid-template-columns:240px 1fr;gap:40px}
+}
+@media(max-width:960px){
+  .sl-time-mgmt-page .hero-inner,
+  .sl-time-mgmt-page .why-time-grid,
+  .sl-time-mgmt-page .speed-grid,
+  .sl-time-mgmt-page .ai-grid{grid-template-columns:1fr;gap:var(--space-xl)}
+  .sl-time-mgmt-page .alloc-wrap{grid-template-columns:1fr}
+  .sl-time-mgmt-page .donut-wrap{flex-direction:row;align-items:flex-start}
+  .sl-time-mgmt-page .mistakes-grid,
+  .sl-time-mgmt-page .steps-cards{grid-template-columns:1fr 1fr}
+  .sl-time-mgmt-page .ai-section{padding:48px 28px}
+  .sl-time-mgmt-page .sd-section-row{grid-template-columns:1fr auto auto}
+  .sl-time-mgmt-page .sd-bar-wrap{display:none}
+}
+@media(max-width:640px){
+  .sl-time-mgmt-page{--px:20px}
+  .sl-time-mgmt-page .mistakes-grid,
+  .sl-time-mgmt-page .steps-cards{grid-template-columns:1fr}
+  .sl-time-mgmt-page .why-lists{grid-template-columns:1fr}
+  .sl-time-mgmt-page .quadrant{grid-template-columns:1fr 1fr}
+  .sl-time-mgmt-page .cta-block{padding:80px var(--px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .sl-time-mgmt-page *,
+  .sl-time-mgmt-page *::before,
+  .sl-time-mgmt-page *::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}

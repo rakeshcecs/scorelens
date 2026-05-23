@@ -157,6 +157,23 @@ function scorelens_enqueue_assets() {
 			[ 'strategy' => 'defer', 'in_footer' => true ]
 		);
 	}
+
+	if ( scorelens_is_time_mgmt_page() ) {
+		wp_enqueue_style(
+			'scorelens-time-mgmt',
+			SCORELENS_URI . '/assets/css/scorelens-time-mgmt.css',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION
+		);
+
+		wp_enqueue_script(
+			'scorelens-time-mgmt',
+			SCORELENS_URI . '/assets/js/scorelens-time-mgmt.js',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION,
+			[ 'strategy' => 'defer', 'in_footer' => true ]
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'scorelens_enqueue_assets' );
 
@@ -174,6 +191,10 @@ function scorelens_is_weak_topics_page() {
 
 function scorelens_is_accuracy_page() {
 	return is_page_template( 'template-improve-accuracy-ssc-exams.php' );
+}
+
+function scorelens_is_time_mgmt_page() {
+	return is_page_template( 'template-ssc-time-management-strategy.php' );
 }
 
 /* ─────────────────────────────────────────────
