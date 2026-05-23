@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ─────────────────────────────────────────────
  * Constants
  * ───────────────────────────────────────────── */
-define( 'SCORELENS_VERSION', '2.1.2' );
+define( 'SCORELENS_VERSION', '2.1.7' );
 define( 'SCORELENS_DIR',     get_template_directory() );
 define( 'SCORELENS_URI',     get_template_directory_uri() );
 
@@ -260,34 +260,82 @@ function scorelens_footer_nav_fallback( array $items ) {
 }
 
 /* ─────────────────────────────────────────────
- * Walker: strips <ul> wrapper so links sit
- * directly inside their container div — used
- * for the primary nav links.
+ * Walker: renders the primary nav as a flat
+ * sequence of <a> tags. Top-level items with
+ * children are wrapped in a .sl-nav-group whose
+ * submenu becomes a .sl-nav-dropdown panel
+ * (hover/focus-within reveal — pure CSS).
+ *
+ * Child detection uses the menu-item-has-children
+ * class WP adds automatically (more reliable than
+ * $args->has_children, which can be missing when
+ * other plugins filter the walker args).
  * ───────────────────────────────────────────── */
 class ScoreLens_Nav_Walker extends Walker_Nav_Menu {
 
-	public function start_lvl( &$output, $depth = 0, $args = null ) {}
-	public function end_lvl( &$output, $depth = 0, $args = null ) {}
+	/** Tracks which top-level items opened a .sl-nav-group wrapper so end_el closes the correct ones. */
+	protected $open_groups = [];
+
+	protected function item_has_children( $item, $args = null ) {
+		$classes = ( ! empty( $item->classes ) && is_array( $item->classes ) ) ? $item->classes : [];
+		if ( in_array( 'menu-item-has-children', $classes, true ) ) {
+			return true;
+		}
+		return ! empty( $args->has_children );
+	}
+
+	public function start_lvl( &$output, $depth = 0, $args = null ) {
+		if ( 0 === $depth ) {
+			$output .= '<div class="sl-nav-dropdown" role="menu">';
+		}
+	}
+
+	public function end_lvl( &$output, $depth = 0, $args = null ) {
+		if ( 0 === $depth ) {
+			$output .= '</div>';
+		}
+	}
 
 	public function start_el( &$output, $data_object, $depth = 0, $args = null, $current_object_id = 0 ) {
-		$item     = $data_object;
-		$atts     = [];
-		$atts['href']   = ! empty( $item->url )        ? $item->url        : '';
-		$atts['title']  = ! empty( $item->attr_title ) ? $item->attr_title : '';
-		$atts['target'] = ! empty( $item->target )     ? $item->target     : '';
-		$atts['rel']    = ! empty( $item->xfn )        ? $item->xfn        : '';
+		$item         = $data_object;
+		$is_top       = ( 0 === $depth );
+		$has_children = $is_top && $this->item_has_children( $item, $args );
+
+		$atts = [
+			'href'   => ! empty( $item->url )        ? $item->url        : '',
+			'title'  => ! empty( $item->attr_title ) ? $item->attr_title : '',
+			'target' => ! empty( $item->target )     ? $item->target     : '',
+			'rel'    => ! empty( $item->xfn )        ? $item->xfn        : '',
+		];
 		$atts_str = '';
 		foreach ( $atts as $attr => $value ) {
 			if ( ! empty( $value ) ) {
 				$atts_str .= ' ' . $attr . '="' . esc_attr( $value ) . '"';
 			}
 		}
-		$output .= '<a' . $atts_str . '>'
-			. apply_filters( 'the_title', $item->title, $item->ID )
-			. '</a>';
+
+		$title_html = apply_filters( 'the_title', $item->title, $item->ID );
+
+		if ( $has_children ) {
+			$output .= '<div class="sl-nav-group">';
+			$output .= '<a' . $atts_str . ' class="sl-nav-group-link" aria-haspopup="true">';
+			$output .= $title_html;
+			$output .= '<svg class="sl-nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+			$output .= '</a>';
+			$this->open_groups[ $item->ID ] = true;
+		} elseif ( $is_top ) {
+			$output .= '<a' . $atts_str . '>' . $title_html . '</a>';
+		} else {
+			$output .= '<a' . $atts_str . ' role="menuitem">' . $title_html . '</a>';
+		}
 	}
 
-	public function end_el( &$output, $data_object, $depth = 0, $args = null ) {}
+	public function end_el( &$output, $data_object, $depth = 0, $args = null ) {
+		if ( 0 === $depth && ! empty( $this->open_groups[ $data_object->ID ] ) ) {
+			$output .= '</div>';
+			unset( $this->open_groups[ $data_object->ID ] );
+		}
+	}
 }
 
 

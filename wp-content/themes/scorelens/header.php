@@ -40,7 +40,7 @@
 					'container'      => false,
 					'fallback_cb'    => false,
 					'items_wrap'     => '%3$s',
-					'depth'          => 1,
+					'depth'          => 2,
 					'walker'         => new ScoreLens_Nav_Walker(),
 				] );
 			} else {
