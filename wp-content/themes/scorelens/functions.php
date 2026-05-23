@@ -123,6 +123,23 @@ function scorelens_enqueue_assets() {
 			[ 'strategy' => 'defer', 'in_footer' => true ]
 		);
 	}
+
+	if ( scorelens_is_weak_topics_page() ) {
+		wp_enqueue_style(
+			'scorelens-weak-topics',
+			SCORELENS_URI . '/assets/css/scorelens-weak-topics.css',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION
+		);
+
+		wp_enqueue_script(
+			'scorelens-weak-topics',
+			SCORELENS_URI . '/assets/js/scorelens-weak-topics.js',
+			[ 'scorelens-main' ],
+			SCORELENS_VERSION,
+			[ 'strategy' => 'defer', 'in_footer' => true ]
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'scorelens_enqueue_assets' );
 
@@ -132,6 +149,10 @@ function scorelens_is_analysis_mock_tests_page() {
 
 function scorelens_is_improve_mock_score_page() {
 	return is_page_template( 'template-improve-ssc-mock-test-score.php' );
+}
+
+function scorelens_is_weak_topics_page() {
+	return is_page_template( 'template-ssc-weak-topic-analysis.php' );
 }
 
 /* ─────────────────────────────────────────────
