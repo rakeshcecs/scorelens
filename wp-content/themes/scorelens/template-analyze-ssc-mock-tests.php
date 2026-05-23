@@ -11,26 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 add_action( 'wp_head', function () {
-	$page_url = get_permalink();
 	?>
-	<?php if ( false ) : ?>
-	<script type="application/ld+json">
-	<?php
-	echo wp_json_encode( [
-		'@context'         => 'https://schema.org',
-		'@type'            => 'Article',
-		'headline'         => 'How to Analyze SSC Mock Tests Effectively',
-		'description'      => 'Learn how to analyze SSC mock tests effectively using accuracy tracking, weak-topic analysis, and time management strategies to improve your SSC exam score.',
-		'publisher'        => [
-			'@type' => 'Organization',
-			'name'  => 'ScoreLens',
-			'url'   => home_url( '/' ),
-		],
-		'mainEntityOfPage' => $page_url,
-	], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-	?>
-	</script>
-	<?php endif; ?>
+	
 	<script type="application/ld+json">
 	<?php
 	$faqs = [
@@ -57,20 +39,7 @@ add_action( 'wp_head', function () {
 	], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	?>
 	</script>
-	<?php if ( false ) : ?>
-	<script type="application/ld+json">
-	<?php
-	echo wp_json_encode( [
-		'@context'        => 'https://schema.org',
-		'@type'           => 'BreadcrumbList',
-		'itemListElement' => [
-			[ '@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => home_url( '/' ) ],
-			[ '@type' => 'ListItem', 'position' => 2, 'name' => get_the_title(), 'item' => $page_url ],
-		],
-	], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-	?>
-	</script>
-	<?php endif; ?>
+	
 	<?php
 }, 2 );
 
@@ -80,7 +49,7 @@ get_header();
 <main class="sl-analysis-page" id="sl-primary">
   <?php 
     // get_template_part('template-parts/breadcrumb', null, array( 'title' => 'How to Analyze SSC Mock Tests Effectively' ) ); 
-    get_template_part('template-parts/breadcrumb'); 
+    // get_template_part('template-parts/breadcrumb'); 
   ?>
  
 

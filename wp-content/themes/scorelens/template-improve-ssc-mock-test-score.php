@@ -48,7 +48,7 @@ get_header();
 
   <?php 
     // get_template_part('template-parts/breadcrumb', null, array( 'title' => 'My Custom Title' ) ); 
-    get_template_part('template-parts/breadcrumb'); 
+    // get_template_part('template-parts/breadcrumb'); 
   ?>
 
 
