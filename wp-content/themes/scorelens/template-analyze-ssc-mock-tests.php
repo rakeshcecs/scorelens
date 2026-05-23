@@ -78,12 +78,11 @@ get_header();
 ?>
 
 <main class="sl-analysis-page" id="sl-primary">
-  
-  <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a class="breadcrumb-home" href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
-    <span class="breadcrumb-sep" aria-hidden="true">&rsaquo;</span>
-    <span class="breadcrumb-current">How to Analyze SSC Mock Tests Effectively</span>
-  </nav>
+  <?php 
+    // get_template_part('template-parts/breadcrumb', null, array( 'title' => 'How to Analyze SSC Mock Tests Effectively' ) ); 
+    get_template_part('template-parts/breadcrumb'); 
+  ?>
+ 
 
 
   <section class="hero">

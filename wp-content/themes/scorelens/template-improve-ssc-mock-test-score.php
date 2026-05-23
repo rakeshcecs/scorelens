@@ -44,11 +44,12 @@ add_action( 'wp_head', function () {
 get_header();
 ?>
 
-<main class="sl-improve-page" id="sl-primary"><nav class="breadcrumb" aria-label="Breadcrumb">
-    <a class="breadcrumb-home" href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
-    <span class="breadcrumb-sep" aria-hidden="true">&rsaquo;</span>
-    <span class="breadcrumb-current"><?php echo esc_html( get_the_title() ); ?></span>
-  </nav>
+<main class="sl-improve-page" id="sl-primary">
+
+  <?php 
+    // get_template_part('template-parts/breadcrumb', null, array( 'title' => 'My Custom Title' ) ); 
+    get_template_part('template-parts/breadcrumb'); 
+  ?>
 
 
 <section class="hero">
