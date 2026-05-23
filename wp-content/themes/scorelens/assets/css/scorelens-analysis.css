@@ -48,8 +48,8 @@
 .sl-analysis-page .section-lede{font-size:17px;color:var(--ink-soft);max-width:620px;line-height:1.55;margin-bottom:60px}
 .sl-analysis-page .serif{font-family:var(--serif);font-weight:400;font-style:italic}
 .sl-analysis-page .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--rule);font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:var(--space-md)}
-.sl-analysis-page .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-2) 20%,transparent);animation:pulse 2s infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sl-analysis-page .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-2) 20%,transparent);animation:analysis-pulse 2s infinite;flex-shrink:0}
+@keyframes analysis-pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
 
 .sl-analysis-page .hero{padding:60px var(--px) 40px;max-width:var(--max-w);margin:0 auto}
@@ -71,8 +71,8 @@
 .sl-analysis-page .hv-row:last-of-type{border-bottom:none}
 .sl-analysis-page .hv-name{color:#f6f5f1;font-weight:500}
 .sl-analysis-page .hv-bar{height:5px;background:#1a2d4a;border-radius:3px;overflow:hidden}
-.sl-analysis-page .hv-fill{display:block;height:100%;border-radius:3px;animation:grow 1.4s ease-out}
-@keyframes grow{from{width:0 !important}}
+.sl-analysis-page .hv-fill{display:block;height:100%;border-radius:3px;animation:analysis-grow 1.4s ease-out}
+@keyframes analysis-grow{from{width:0 !important}}
 .sl-analysis-page .hv-pct{text-align:right;color:#7d8aa3;font-size:11px}
 .sl-analysis-page .hv-insight{margin-top:var(--space-md);padding:14px 16px;border-radius:10px;background:rgba(244,185,66,.1);border-left:3px solid var(--accent);font-size:12px;line-height:1.55;color:#e4dcc5}
 .sl-analysis-page .hv-insight strong{color:var(--accent);display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
@@ -182,8 +182,8 @@
 .sl-analysis-page .cta-btns{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
 
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.sl-analysis-page .fade{animation:fadeUp .8s var(--ease) both}
+@keyframes analysis-fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.sl-analysis-page .fade{animation:analysis-fadeUp .8s var(--ease) both}
 .sl-analysis-page .d1{animation-delay:.1s}.sl-analysis-page .d2{animation-delay:.25s}.sl-analysis-page .d3{animation-delay:.4s}.sl-analysis-page .d4{animation-delay:.55s}
 
 

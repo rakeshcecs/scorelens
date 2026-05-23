@@ -49,8 +49,8 @@
 .sl-improve-page .section-h .serif,.sl-improve-page .serif{font-family:var(--serif);font-weight:400;font-style:italic}
 .sl-improve-page .section-lede{font-size:17px;color:var(--ink-soft);max-width:640px;line-height:1.55;margin-bottom:60px}
 .sl-improve-page .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--rule);font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:var(--space-md)}
-.sl-improve-page .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-2) 20%,transparent);animation:pulse 2s infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sl-improve-page .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-2) 20%,transparent);animation:improve-pulse 2s infinite;flex-shrink:0}
+@keyframes improve-pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
 
 .sl-improve-page .hero{padding:60px var(--px) 40px;max-width:var(--max-w);margin:0 auto}
@@ -143,8 +143,8 @@
 .sl-improve-page .acc-bar-label{display:flex;justify-content:space-between;font-size:13px;font-weight:500;color:var(--ink)}
 .sl-improve-page .acc-bar-track{height:10px;background:color-mix(in srgb,var(--brand) 8%,transparent);border-radius:var(--r-pill);overflow:hidden}
 [data-theme="dark"] .sl-improve-page .acc-bar-track{background:rgba(255,255,255,.06)}
-.sl-improve-page .acc-bar-fill{height:100%;border-radius:var(--r-pill);position:relative;animation:growBar 1.4s var(--ease) both}
-@keyframes growBar{from{width:0 !important}}
+.sl-improve-page .acc-bar-fill{height:100%;border-radius:var(--r-pill);position:relative;animation:improve-growBar 1.4s var(--ease) both}
+@keyframes improve-growBar{from{width:0 !important}}
 .sl-improve-page .acc-bar-fill::after{content:attr(data-pct);position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:#fff;font-family:var(--mono)}
 .sl-improve-page .fill-good{background:var(--accent-2)}
 .sl-improve-page .fill-warn{background:var(--accent)}
@@ -236,8 +236,8 @@
 .sl-improve-page .cta-btns{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
 
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.sl-improve-page .fade{animation:fadeUp .8s var(--ease) both}
+@keyframes improve-fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.sl-improve-page .fade{animation:improve-fadeUp .8s var(--ease) both}
 .sl-improve-page .d1{animation-delay:.1s}.sl-improve-page .d2{animation-delay:.25s}.sl-improve-page .d3{animation-delay:.4s}
 .sl-improve-page .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .sl-improve-page .reveal.visible{opacity:1;transform:translateY(0)}
